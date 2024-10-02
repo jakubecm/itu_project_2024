@@ -1,67 +1,77 @@
-import React, { useState, useEffect } from "react";
-import { Chessboard } from "react-chessboard";
+import React, { useEffect, useState } from 'react';
+import { Chessboard } from 'react-chessboard';
 
-// Define the type for the game state
 interface GameState {
   fen: string;
-  turn: "white" | "black";
+  turn: string;
   is_checkmate: boolean;
   is_stalemate: boolean;
 }
 
-const App: React.FC = () => {
+function App() {
   const [gameState, setGameState] = useState<GameState>({
-    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    turn: "white",
+    fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', // Initial board state in FEN notation
+    turn: 'white',
     is_checkmate: false,
     is_stalemate: false,
   });
 
-    // Fetch the current game state from the backend
-    const startGame = async (): Promise<void> => {
-      const response = await fetch("http://127.0.0.1:5000/new_game");
-      const data: GameState = await response.json();
-      setGameState(data);
-    };
-
-  // Fetch the current game state from the backend
-  const fetchGameState = async (): Promise<void> => {
-    const response = await fetch("http://127.0.0.1:5000/state");
-    const data: GameState = await response.json();
+  // Function to fetch the game state from the backend
+  const fetchGameState = async () => {
+    const response = await fetch('http://127.0.0.1:5000/state');
+    const data = await response.json();
     setGameState(data);
   };
 
-  // Make a move by sending it to the backend
-  const makeMove = async (fromSquare: string, toSquare: string): Promise<void> => {
+  // Function to start a new game by calling the backend
+  const startNewGame = async () => {
+    const response = await fetch('http://127.0.0.1:5000/new_game', {
+      method: 'POST',
+    });
+    const data = await response.json();
+    setGameState(data);
+  };
+
+  // Function to send a move to the backend
+  const makeMove = async (fromSquare: string, toSquare: string) => {
     const move = `${fromSquare}${toSquare}`;
-    const response = await fetch("http://127.0.0.1:5000/move", {
-      method: "POST",
+    const response = await fetch('http://127.0.0.1:5000/move', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ move }),
     });
-    const data: GameState = await response.json();
+    const data = await response.json();
     setGameState(data);
   };
 
-  // This function is called when a piece is moved
-  const handleMove = (fromSquare: string, toSquare: string): void => {
+  // Function to request an AI move from the backend
+  const requestAiMove = async () => {
+    const response = await fetch('http://127.0.0.1:5000/ai_move', {
+      method: 'POST',
+    });
+    const data = await response.json();
+    setGameState(data);
+  };
+
+  // Called when a piece is dropped on the chessboard
+  const handleMove = (fromSquare: string, toSquare: string) => {
     makeMove(fromSquare, toSquare);
   };
 
   useEffect(() => {
-    fetchGameState(); // Fetch the game state when the component loads
+    fetchGameState(); // Fetch initial game state on load
   }, []);
 
-  startGame(); // Start a new game when the component loads
-
   return (
-    <div>
+    <div className="App">
       <h1>Chess Game</h1>
+      <button onClick={startNewGame}>New Game</button>
+      <button onClick={requestAiMove}>AI Move</button>
       <Chessboard
         position={gameState.fen}
-        onPieceDrop={(sourceSquare: string, targetSquare: string) =>
+        onPieceDrop={(sourceSquare, targetSquare) =>
           handleMove(sourceSquare, targetSquare)
         }
       />
@@ -72,6 +82,6 @@ const App: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default App;
