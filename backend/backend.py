@@ -2,8 +2,11 @@ from flask import Flask, jsonify, request
 import chess
 import chess.engine
 from flasgger import Swagger
+from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # This will allow all domains to make requests
 swagger = Swagger(app)
 
 # Create a global chess board object to represent the current game
