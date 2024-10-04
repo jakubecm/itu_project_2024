@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Chessboard } from 'react-chessboard';
+import {Piece} from './board/piece';
+import { Square } from './board/square';
+import { Board } from './board/board';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 interface GameState {
   fen: string;
@@ -66,20 +70,9 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Chess Game</h1>
-      <button onClick={startNewGame}>New Game</button>
-      <button onClick={requestAiMove}>AI Move</button>
-      <Chessboard
-        position={gameState.fen}
-        onPieceDrop={(sourceSquare, targetSquare) =>
-          handleMove(sourceSquare, targetSquare)
-        }
-      />
-      <div>
-        <p>Turn: {gameState.turn}</p>
-        {gameState.is_checkmate && <p>Checkmate!</p>}
-        {gameState.is_stalemate && <p>Stalemate!</p>}
-      </div>
+          <DndProvider backend={HTML5Backend}>
+      <Board fent='rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'/>
+      </DndProvider>
     </div>
   );
 }
