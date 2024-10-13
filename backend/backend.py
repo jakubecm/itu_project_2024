@@ -32,7 +32,8 @@ def new_game():
     board = chess.Board()  # Reset the board to the starting position
     return jsonify({
         'message': 'New game started',
-        'fen': board.fen()  # Return the FEN notation for the starting position
+        'fen': board.fen(),  # Return the FEN notation for the starting position
+        'turn': 'white'
     })
 
 @app.route('/move', methods=['POST'])
@@ -85,7 +86,8 @@ def make_move():
         'fen': board.fen(),  # Updated board position in FEN format
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
-        'turn': 'white' if board.turn == chess.WHITE else 'black'
+        'turn': 'white' if board.turn == chess.WHITE else 'black',
+        'is_check': board.is_check()
     })
 
 @app.route('/state', methods=['GET'])
@@ -152,6 +154,50 @@ def ai_move():
         'ai_move': board.san(ai_move.move),  # Send AI move in SAN format
         'turn': 'white' if board.turn == chess.WHITE else 'black'
     })
+
+@app.route('/legal_moves', methods=['POST'])
+def legal_moves():
+    """
+    Get all legal moves for a piece at a specific position
+    ---
+    parameters:
+      - name: position
+        in: query
+        type: string
+        required: true
+        description: The position of the piece (e.g., "e2")
+    responses:
+      200:
+        description: All legal moves for the piece
+        schema:
+          type: object
+          properties:
+            legal_moves:
+              type: array
+              items:
+                type: string
+                description: The legal move in UCI format (e.g., "e2e4")
+    """
+    global board
+    position = request.json.get('position')  # Get the position (e.g., "e2") from query parameters
+    if not position:
+        return jsonify({'error': 'Position is required'}), 400
+
+    # Convert the position to a square (e.g., "e2" -> chess.E2)
+    try:
+        square = chess.parse_square(position)
+    except ValueError:
+        return jsonify({'error': 'Invalid position'}), 400
+
+    # Find all legal moves for the piece at the given square
+    legal_moves = [
+        move.uci() for move in board.legal_moves if move.from_square == square
+    ]
+
+    return jsonify({
+        'legal_moves': legal_moves
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True)
