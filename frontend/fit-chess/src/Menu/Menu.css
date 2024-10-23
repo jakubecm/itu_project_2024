@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Tera&display=swap'); /* Title font import */
+
+.main-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;                                                /* Align content towards the top */
+  align-items: center;
+  height: 100vh;                                                              /* Full viewport height */
+  width: 100%;                                                                /* Full width */
+  text-align: center;
+  background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);         /* Background color */
+  padding-top: 50px;                                                          /* Move content higher */
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 70px; /* Space between logo and title */
+}
+
+.icon {
+  width: 220px;  /* Larger icon */
+  height: 220px;
+}
+
+.title {
+  font-family: 'Lexend Tera', sans-serif;
+  font-size: 6em;  /* Large title */
+  font-weight: bold;
+  color: #000;
+}
+
+.menu-buttons {
+  margin-top: 150px;      /* Increase space between the title and the button */
+  display: flex;
+  flex-direction: column;
+  gap: 50px;              /* Gap prepared for other buttons */
+}
+
+button {
+  padding: 15px 25px;
+  font-size: 2.5em;
+  font-weight: 700;
+  color: black;
+  background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
+  border: 5px solid black;
+  border-radius: 45px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  background-color: #aaa;
+}
