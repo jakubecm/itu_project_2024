@@ -508,45 +508,40 @@ def legal_moves_multi():
                 type: string
                 description: The legal move in UCI format (e.g., "e2e4")
     """
-    try:
-        data = request.get_json()
-        print("Received data:", data)  # Log the received data to check if it contains both position and game_id
-        game_id = data.get('game_id')
-        position = data.get('position')
+    data = request.get_json()
+    print("Received data:", data)  # Log the received data to check if it contains both position and game_id
+    game_id = data.get('game_id')
+    position = data.get('position')
 
-        if not game_id or not position:
-            print("Missing game_id or position")  # Log if either is missing
-            return jsonify({'error': 'Missing game_id or position'}), 400
+    if not game_id or not position:
+      print("Missing game_id or position")  # Log if either is missing
+      return jsonify({'error': 'Missing game_id or position'}), 400
 
         # Check if the game ID exists
-        if game_id not in games:
-            print("Game ID not found")  # Log if game_id is invalid
-            return jsonify({'error': 'Game ID not found'}), 400
+    if game_id not in games:
+      print("Game ID not found")  # Log if game_id is invalid
+      return jsonify({'error': 'Game ID not found'}), 400
 
         # Get the game and board
-        game = games[game_id]
-        board = game['board']
+    game = games[game_id]
+    board = game['board']
 
         # Convert the position to a square (e.g., "e2" -> chess.E2)
-        try:
-            square = chess.parse_square(position)
-        except ValueError:
-            print("Invalid position")  # Log if the position is invalid
-            return jsonify({'error': 'Invalid position'}), 400
+    try:
+      square = chess.parse_square(position)
+    except ValueError:
+      print("Invalid position")  # Log if the position is invalid
+      return jsonify({'error': 'Invalid position'}), 400
 
         # Find all legal moves for the piece at the given square
-        legal_moves = [
-            move.uci() for move in board.legal_moves if move.from_square == square
-        ]
-        print("Legal Moves:", legal_moves)  # Log the legal moves found
+    legal_moves = [
+      move.uci() for move in board.legal_moves if move.from_square == square
+    ]
+    print("Legal Moves:", legal_moves)  # Log the legal moves found
 
-        return jsonify({
-            'legal_moves': legal_moves
-        })
-
-    except Exception as e:
-        print("Error:", e)  # Log any other errors
-        return jsonify({'error': str(e)}), 500
+    return jsonify({
+      'legal_moves': legal_moves
+    })
 
 @app.route('/multiplayer/games', methods=['GET'])
 def list_games():

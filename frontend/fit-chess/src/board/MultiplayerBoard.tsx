@@ -72,7 +72,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
         if(gameState?.turn !== playerColor) { // Check if it's the player's turn
             return;
         }
-
+    
         try {
             const move = `${fromSquare}${toSquare}`;
             const response = await fetch(`http://${serverIp}:5000/multiplayer/move`, {
@@ -82,18 +82,19 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                 },
                 body: JSON.stringify({ game_id: gameId, move }),
             });
-
-            const data = await response.json();
-
-            setGameState(data);
-            setSelectedPiece(null);  // Reset selected piece
-            setLegalMoves([]);  // Reset legal moves
-
+    
+            if (response.ok) {
+                const data = await response.json();
+                setGameState(data);
+                setSelectedPiece(null);  // Reset selected piece
+                setLegalMoves([]);  // Reset legal moves
+            }
+    
         } catch (e) {
             console.error('Failed to make a move:', e);
-    
         }
     };
+    
 
 useEffect(() => {
 
