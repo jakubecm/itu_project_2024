@@ -57,3 +57,42 @@ button:hover {
 button:active {
   background-color: #aaa;
 }
+
+.new-game-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
+  text-align: center;
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 1.5em;
+  background-color: transparent;
+  border: 5px solid black;
+  border-radius: 45px;
+  cursor: pointer;
+  color: black;
+}
+
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 60px; /* Space between items */
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 30px; /* Space between icon and button */
+}
+
+.icon {
+  width: 170px;
+  height: 170px;
+}
