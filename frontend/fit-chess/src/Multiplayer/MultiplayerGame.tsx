@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ServerBrowser } from './ServerBrowser';
 import { JoinGame } from './JoinGame';
+import './ServerBrowser.css';
 
 export const MultiplayerGame: React.FC = () => {
     const [gameId, setGameId] = useState<string | null>(null); // Track the game ID
     const [serverIp, setServerIp] = useState<string | null>(null);
+
+    // Reset the game view when the player leaves
+    const handleLeaveGame = () => {
+        setGameId(null);
+    };
 
     // On mount, set server IP dynamically
     useState(() => {
         const ip = window.location.hostname; // Get the IP address of the server
         setServerIp(ip);
     });
+
+    const navigate = useNavigate(); // Use navigate hook to navigate between routes
 
     // Function to handle creating a new game
     const createGame = async () => {
@@ -20,30 +29,26 @@ export const MultiplayerGame: React.FC = () => {
             });
             const data = await response.json();
             setGameId(data.game_id);
-
         } catch (e) {
             console.error('Failed to create game:', e);
         }
     };
 
-    // Function to handle joining a game from the Server Browser
     const handleJoin = (gameId: string) => {
         setGameId(gameId);
     };
 
     return (
-        <div>
+        <div className="server-browser-container">
             {!gameId ? (
-                <div>
-                    {/* Button to create a new game */}
-                    <button onClick={createGame}>Create New Game</button>
-
-                    {/* Server browser to list available games */}
+                <>
+                <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
+                <h1 className="title">Server Browser</h1>
                     <ServerBrowser serverIp={serverIp!} onJoin={handleJoin} />
-                </div>
+                    <button className="create-button" onClick={createGame}>Create New Game</button>
+                </>
             ) : (
-                // Show Join Game screen once a game is selected or created
-                <JoinGame gameId={gameId} serverIp={serverIp!} />
+                <JoinGame gameId={gameId} serverIp={serverIp!} onLeave={handleLeaveGame} />
             )}
         </div>
     );

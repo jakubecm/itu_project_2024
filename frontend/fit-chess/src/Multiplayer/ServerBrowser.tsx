@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import './ServerBrowser.css';
 
 interface Game {
     game_id: string;
@@ -17,20 +18,16 @@ interface ServerBrowserProps {
 export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }) => {
     const [games, setGames] = useState<Game[]>([]); // Initialize games as an empty array
 
-    // Fetch the list of games from the backend
     const fetchGames = async () => {
         try {
             const response = await fetch(`http://${serverIp}:5000/multiplayer/games`);
             const data = await response.json();
             setGames(data);
-
         } catch (error) {
             console.error('Error fetching games:', error);
         }
     };
 
-    // Poll every 5 seconds to update the list of games
-    // TODO: Add refresh button instead of polling every 5 seconds
     useEffect(() => {
         fetchGames();
         const interval = setInterval(fetchGames, 5000);
@@ -38,13 +35,17 @@ export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }
     }, [serverIp]);  // ServerIp as a dependency to ensure fetchGames runs when it changes
 
     return (
-        <div>
-            <h3>Available Games</h3>
-            <ul>
+        <div className="server-list-container">
+            <ul className="game-list">
                 {games.map((game) => (
-                    <li key={game.game_id}>
-                        Game ID: {game.game_id} | Players: White - {game.players.white || 'Open'}, Black - {game.players.black || 'Open'}
-                        <button onClick={() => onJoin(game.game_id)}>Join</button>
+                    <li key={game.game_id} className="game-item">
+                        <div className="game-info">
+                            <span className="game-id">Game ID: {game.game_id}</span>
+                            <span className="players">
+                                Players: White - {game.players.white || 'Open'}, Black - {game.players.black || 'Open'}
+                            </span>
+                        </div>
+                        <button className="join-button" onClick={() => onJoin(game.game_id)}>Join</button>
                     </li>
                 ))}
             </ul>
