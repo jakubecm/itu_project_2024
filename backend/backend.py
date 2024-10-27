@@ -241,7 +241,7 @@ def create_game():
             message:
               type: string
     """
-    game_id = str(uuid.uuid4())  # Generate a unique game ID
+    game_id = str(uuid.uuid4())[:8]   # Generate a unique game ID
     games[game_id] = create_new_game()  # Create a new game instance
 
     return jsonify({
