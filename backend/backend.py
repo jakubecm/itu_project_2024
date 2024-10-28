@@ -92,6 +92,51 @@ def make_move():
         'is_check': board.is_check()
     })
 
+@app.route('/simulate_move', methods=['POST'])
+def simulate_move():
+    """
+    Simulate a move and return the resulting board state in FEN format
+    without changing the main board.
+    ---
+    parameters:
+      - name: move
+        in: body
+        type: string
+        required: true
+        description: The move in UCI format (e.g., "e7e8")
+    responses:
+      200:
+        description: Simulated board state
+        schema:
+          type: object
+          properties:
+            fen:
+              type: string
+              description: FEN notation of the simulated board
+      400:
+        description: Invalid move format
+    """
+    global board
+    move_uci = request.json.get('move')
+    if not move_uci:
+        return jsonify({'error': 'Move is required'}), 400
+
+    try:
+        # Create a copy of the board for simulation
+        temp_board = board.copy()
+
+        # Apply the move to the temporary board
+        move = chess.Move.from_uci(move_uci)
+        temp_board.push(move)
+    except ValueError:
+        return jsonify({'error': 'Invalid UCI move format'}), 400
+
+    # Return the simulated board state in FEN format
+    return jsonify({
+        'fen': temp_board.fen(),
+        'turn': 'white' if board.turn == chess.WHITE else 'black'
+    })
+
 @app.route('/state', methods=['GET'])
 def get_game_state():
     """
@@ -193,7 +238,7 @@ def legal_moves():
 
     # Find all legal moves for the piece at the given square
     legal_moves = [
-        move.uci() for move in board.legal_moves if move.from_square == square
+        chess.square_name(move.to_square) for move in board.legal_moves if move.from_square == square
     ]
 
     return jsonify({

@@ -4,6 +4,8 @@ import { Piece } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
+export const SQUARE_SIZE = '50px';
+
 interface GameState {
     fen: string;
     turn: string;
@@ -38,21 +40,21 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
 
     // Function to fetch and highlight legal moves for the selected piece
     const handlePieceSelection = async (position: string) => {
-        if(gameState?.turn !== playerColor) { // Check if it's the player's turn
+        if (gameState?.turn !== playerColor) { // Check if it's the player's turn
             return;
         }
 
         setSelectedPiece(position);
 
         try {
-            const response = await fetch(`http://${serverIp}:5000/multiplayer/legal_moves_multi`, { 
+            const response = await fetch(`http://${serverIp}:5000/multiplayer/legal_moves_multi`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ game_id: gameId, position }),  // Send both game_id and position
             });
-            
+
             const data = await response.json();
             if (data.legal_moves) {
                 const moveDestination = data.legal_moves.map((move: string) => move.slice(2));  // Get last 2 chars as destination square
@@ -69,10 +71,10 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
 
     // Function to handle moves and update game state
     const handleMove = async (fromSquare: string, toSquare: string) => {
-        if(gameState?.turn !== playerColor) { // Check if it's the player's turn
+        if (gameState?.turn !== playerColor) { // Check if it's the player's turn
             return;
         }
-    
+
         try {
             const move = `${fromSquare}${toSquare}`;
             const response = await fetch(`http://${serverIp}:5000/multiplayer/move`, {
@@ -82,32 +84,32 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                 },
                 body: JSON.stringify({ game_id: gameId, move }),
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
                 setGameState(data);
                 setSelectedPiece(null);  // Reset selected piece
                 setLegalMoves([]);  // Reset legal moves
             }
-    
+
         } catch (e) {
             console.error('Failed to make a move:', e);
         }
     };
-    
 
-useEffect(() => {
 
-    fetchGameState();  // Call the async function
+    useEffect(() => {
 
-    // Fetch the game state every second, polling the server
-    const intervalId = setInterval(() => {
-        fetchGameState();
-    }, 1000);  // Poll every second
+        fetchGameState();  // Call the async function
 
-    // Clean up the interval when the component unmounts
-    return () => clearInterval(intervalId);
-}, [gameId]);
+        // Fetch the game state every second, polling the server
+        const intervalId = setInterval(() => {
+            fetchGameState();
+        }, 1000);  // Poll every second
+
+        // Clean up the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, [gameId]);
 
     if (!gameState) {
         return <div>Loading...</div>;
@@ -159,7 +161,7 @@ useEffect(() => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div> Turn: {gameState.turn} </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 50px)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
                 {squares}
             </div>
         </DndProvider>
