@@ -150,47 +150,51 @@ export const Board: React.FC<{}> = () => {
         return <div>Loading...</div>;
     }
 
-    const pos = gameState.fen.split(' ')[0];
-    const squares: JSX.Element[] = [];
-    let row = '8'; // Start at row 8
-    let col = 'a'; // Start at column a
+    const renderSquares = () => {
+        const pos = gameState.fen.split(' ')[0];
+        const squares: JSX.Element[] = [];
+        let row = '8'; // Start at row 8
+        let col = 'a'; // Start at column a
 
-    pos.split('').forEach((c) => {
-        if (c === '/') {
-            // Move to the next row
-            row = String.fromCharCode(row.charCodeAt(0) - 1);
-            col = 'a';
-            return;
-        }
+        pos.split('').forEach((c) => {
+            if (c === '/') {
+                // Move to the next row
+                row = String.fromCharCode(row.charCodeAt(0) - 1);
+                col = 'a';
+                return;
+            }
 
-        if (c >= '1' && c <= '8') {
-            // numbers represent empty squares
-            for (let i = 0; i < parseInt(c); i++) {
+            if (c >= '1' && c <= '8') {
+                // numbers represent empty squares
+                for (let i = 0; i < parseInt(c); i++) {
+                    const pos = col + row;
+                    const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
+                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} />);
+                    col = String.fromCharCode(col.charCodeAt(0) + 1);
+                }
+            } else {
+                // letters represent pieces
                 const pos = col + row;
-                const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
-                squares.push(<Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} />);
+                const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
+                const inCheck = ((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check;
+                squares.push(
+                    <Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} inCheck={inCheck}>
+                        <Piece type={c} position={pos} handlePick={handlePieceSelection} />
+                    </Square>
+                );
                 col = String.fromCharCode(col.charCodeAt(0) + 1);
             }
-        } else {
-            // letters represent pieces
-            const pos = col + row;
-            const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
-            const inCheck = ((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check;
-            squares.push(
-                <Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} inCheck={inCheck}>
-                    <Piece type={c} position={pos} handlePick={handlePieceSelection} />
-                </Square>
-            );
-            col = String.fromCharCode(col.charCodeAt(0) + 1);
-        }
-    });
+        });
+
+        return squares;
+    };
 
     return (
         // DndProvider is a wrapper component that sets up the context for drag and drop
         <DndProvider backend={HTML5Backend}>
             turn: {gameState.turn}
             <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
-                {squares}
+                {renderSquares()}
                 {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare}/>}
             </div>
         </DndProvider>
