@@ -39,14 +39,14 @@ export const Piece: React.FC<PieceProps> = ({ type, position, handlePick }) => {
             isDragging: monitor.isDragging(),
         }),
     });
-    
+
     const pieceImg = pieceSrc[type];
 
     return (
         <div ref={dragRef}
-            style={{ 
-                opacity: isDragging ? 0.5 : 1, 
-                cursor: 'default', 
+            style={{
+                opacity: isDragging ? 0.5 : 1,
+                cursor: 'default',
                 transform: 'translate(0, 0)'  // hides the background when dragging
             }}>
             <img src={pieceImg} alt={type} height={50} width={50} />
@@ -67,7 +67,8 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
     const knight = turn === 'white' ? 'N' : 'n';
     const position = calculatePosition(promotionSqr);
     const X = position.x + 'px';
-    const Y = (position.y + 50) + 'px'; // position the promotion options below the pawn
+    const Y = turn === 'white' ? (position.y + 50) + 'px' : // position the promotion options below the pawn
+        (position.y - 200) + 'px';  // position the promotion options above the pawn
 
     // tyto divy se musi nacpat do componentu nebo alespon css classy ale jsem liny :sob:
     return (
