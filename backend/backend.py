@@ -40,6 +40,31 @@ def new_game():
         'turn': 'white'
     })
 
+@app.route('/new_tutorial', methods=['POST'])
+def new_tutorial():
+    """
+    Start a new chess game
+    ---
+    responses:
+      200:
+        description: A new game is started
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            fen:
+              type: string
+    """
+    global board
+    board = chess.Board()  # Reset the board to the starting position
+    board.set_fen("rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNB2BNR b KQkq - 0 1")  
+    return jsonify({
+        'message': 'New game started',
+        'fen': board.fen(),  # Return the FEN notation for the starting position
+        'turn': 'white'
+    })
+
 @app.route('/move', methods=['POST'])
 def make_move():
     """
