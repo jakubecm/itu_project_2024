@@ -3,6 +3,7 @@ import { Square } from './Square';
 import { Piece } from './Piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import GameOverModal from '../Effects/GameOverModal';
 
 export const SQUARE_SIZE = '50px';
 
@@ -12,7 +13,7 @@ interface GameState {
     is_checkmate: boolean;
     is_stalemate: boolean;
     is_check: boolean;
-    check_square?: string; // Square to highlight in checkmate
+    check_square?: string;
 }
 
 interface MultiplayerBoardProps {
@@ -25,7 +26,8 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
     const [legalMoves, setLegalMoves] = useState<string[]>([]);
-    const [hasGameEnded, setHasGameEnded] = useState(false); // Track if the game has ended for both players
+    const [hasGameEnded, setHasGameEnded] = useState(false);
+    const [modalClosed, setModalClosed] = useState(false); // Track if the modal was closed
 
     const fetchGameState = async () => {
         try {
@@ -33,7 +35,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
             const data = await response.json();
             setGameState(data);
 
-            // Stop polling if the game has ended for both players
             if (data.is_checkmate || data.is_stalemate) {
                 setHasGameEnded(true);
             }
@@ -43,9 +44,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     };
 
     const handlePieceSelection = async (position: string) => {
-        if (gameState?.turn !== playerColor || gameState?.is_checkmate) {
-            return;
-        }
+        if (gameState?.turn !== playerColor || gameState?.is_checkmate) return;
 
         setSelectedPiece(position);
 
@@ -58,10 +57,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
 
             const data = await response.json();
             if (data.legal_moves) {
-                const moveDestination = data.legal_moves.map((move: string) => move.slice(2));
-                setLegalMoves(moveDestination);
-            } else {
-                console.error('Invalid move:', data.error);
+                setLegalMoves(data.legal_moves.map((move: string) => move.slice(2)));
             }
         } catch (e) {
             console.error('Failed to fetch legal moves:', e);
@@ -69,9 +65,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     };
 
     const handleMove = async (fromSquare: string, toSquare: string) => {
-        if (gameState?.turn !== playerColor || gameState?.is_checkmate) {
-            return;
-        }
+        if (gameState?.turn !== playerColor || gameState?.is_checkmate) return;
 
         try {
             const move = `${fromSquare}${toSquare}`;
@@ -103,17 +97,21 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
         }
     }, [gameId, hasGameEnded]);
 
-    const renderSquares = () => {
-        if (!gameState || !gameState.fen) {
-            return null;
+    // Update modal visibility only if gameState has valid data and the game ended
+    useEffect(() => {
+        if (gameState && (gameState.is_checkmate || gameState.is_stalemate)) {
+            setModalClosed(false); // Ensure modal opens upon game end
         }
+    }, [gameState?.is_checkmate, gameState?.is_stalemate]);
 
-        const pos = gameState.fen.split(' ')[0];
+    const renderSquares = () => {
+        if (!gameState || !gameState.fen) return null;
+
         const squares: JSX.Element[] = [];
         let row = '8';
         let col = 'a';
 
-        pos.split('').forEach((c) => {
+        gameState.fen.split(' ')[0].split('').forEach((c) => {
             if (c === '/') {
                 row = String.fromCharCode(row.charCodeAt(0) - 1);
                 col = 'a';
@@ -123,15 +121,12 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
             if (c >= '1' && c <= '8') {
                 for (let i = 0; i < parseInt(c); i++) {
                     const squarePos = col + row;
-                    const highlighted = selectedPiece === squarePos || legalMoves.includes(squarePos);
-                    const isCheckmateHighlight = gameState.check_square === squarePos;
-
                     squares.push(
                         <Square
                             key={squarePos}
                             position={squarePos}
-                            highlighted={highlighted}
-                            isCheckmateHighlight={isCheckmateHighlight}
+                            highlighted={selectedPiece === squarePos || legalMoves.includes(squarePos)}
+                            isCheckmateHighlight={gameState.check_square === squarePos}
                             handleMove={handleMove}
                         />
                     );
@@ -139,17 +134,13 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                 }
             } else {
                 const squarePos = col + row;
-                const highlighted = selectedPiece === squarePos || legalMoves.includes(squarePos);
-                const inCheck = ((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check;
-                const isCheckmateHighlight = gameState.check_square === squarePos;
-
                 squares.push(
                     <Square
                         key={squarePos}
                         position={squarePos}
-                        highlighted={highlighted}
-                        inCheck={inCheck}
-                        isCheckmateHighlight={isCheckmateHighlight}
+                        highlighted={selectedPiece === squarePos || legalMoves.includes(squarePos)}
+                        inCheck={((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check}
+                        isCheckmateHighlight={gameState.check_square === squarePos}
                         handleMove={handleMove}
                     >
                         <Piece type={c} position={squarePos} handlePick={handlePieceSelection} />
@@ -169,6 +160,12 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
             {gameState?.is_stalemate && <div>Stalemate</div>}
             <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})` }}>
                 {renderSquares()}
+                {!modalClosed && gameState && hasGameEnded && (
+                    <GameOverModal
+                        message={gameState.is_checkmate ? `Checkmate! ${gameState.turn === 'white' ? 'Black' : 'White'} wins!` : "Stalemate! It's a draw!"}
+                        onClose={() => setModalClosed(true)}
+                    />
+                )}
             </div>
         </DndProvider>
     );
