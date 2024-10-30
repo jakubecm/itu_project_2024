@@ -3,6 +3,7 @@ import { Square } from './square';
 import { Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import GameOverModal from '../Effects/GameOverModal';
 
 export const SQUARE_SIZE = '50px';
 
@@ -21,6 +22,7 @@ export const Board: React.FC<{}> = () => {
     const [legalMoves, setLegalMoves] = useState<string[]>([]); // Track legal moves for the selected piece
     const [promotionMove, setPromotionMove] = useState<{ fromSquare: string; toSquare: string } | null>(null);
     const [showPromotionOptions, setShowPromotionOptions] = useState(false);
+    const [showGameOverModal, setShowGameOverModal] = useState(false);
 
     // function that launches when a move is made
     // handles promotion moves and submits the move
@@ -143,6 +145,13 @@ export const Board: React.FC<{}> = () => {
         startNewGame();
     }, []); // Empty dependency array ensures this runs only once on mount
 
+    useEffect(() => {
+        if (gameState && (gameState.is_checkmate || gameState.is_stalemate)) {
+            gameState.turn = gameState.turn === 'white' ? 'Black' : 'White';
+            setShowGameOverModal(true);
+        }
+    }, [gameState]);
+
     // if the game state is not loaded, show a loading message
     // this prevents stuff breaking on the first load,
     // when the game is not fetched from backend yet
@@ -196,6 +205,13 @@ export const Board: React.FC<{}> = () => {
             <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
                 {renderSquares()}
                 {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare}/>}
+                {showGameOverModal && (
+                    <GameOverModal
+                        message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
+                        onClose={() => setShowGameOverModal(false)}
+                        onNewGame={startNewGame}
+                    />
+                )}
             </div>
         </DndProvider>
     );
