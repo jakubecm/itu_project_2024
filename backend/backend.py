@@ -360,115 +360,48 @@ def join_game():
 
 @app.route('/multiplayer/move', methods=['POST'])
 def move_multiplayer():
-    """
-    Make a move in a multiplayer chess game
-    ---
-    parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          required:
-            - game_id
-            - move
-          properties:
-            game_id:
-              type: string
-              description: The game ID to make a move in
-            move:
-              type: string
-              description: The chess move in UCI format (e.g., "e2e4")
-    responses:
-      200:
-        description: Move is accepted and game state updated
-        schema:
-          type: object
-          properties:
-            fen:
-              type: string
-              example: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            is_checkmate:
-              type: boolean
-              example: false
-            is_stalemate:
-              type: boolean
-              example: false
-            turn:
-              type: string
-              example: "white"
-            is_check:
-              type: boolean
-              example: false
-      400:
-        description: Invalid move or game state
-        schema:
-          type: object
-          properties:
-            error:
-              type: string
-              example: "Game ID not found"
-    """
-    try:
-        # Parse incoming JSON safely
-        data = request.get_json()
-        if data is None:
-            raise ValueError("No JSON data found")
-    except Exception as e:
-        return jsonify({'error': f"Invalid JSON: {str(e)}"}), 400
-
-    # Extract game_id and move from the request
+    data = request.get_json()
     game_id = data.get('game_id')
     move_uci = data.get('move')
 
-    # Validate the presence of required fields
     if not game_id or not move_uci:
         return jsonify({'error': 'game_id and move are required'}), 400
 
-    # Check if the game ID exists
     if game_id not in games:
         return jsonify({'error': 'Game ID not found'}), 400
 
-    # Get the game and the board
     game = games[game_id]
     board = game['board']
     current_turn = 'white' if board.turn == chess.WHITE else 'black'
     
-    # Verify that the player making the move is the correct player
     player_ip = request.remote_addr
     if game['players'][current_turn] != player_ip:
         return jsonify({'error': 'It is not your turn or you are not a player in this game'}), 400
 
-    # Try to make the move
     try:
         move = chess.Move.from_uci(move_uci)
         if move in board.legal_moves:
-            board.push(move)  # Make the move on the board
+            board.push(move)
         else:
             return jsonify({'error': 'Illegal move'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-    # Check if the game has ended
-    if board.is_checkmate() or board.is_stalemate():
-        # Delete the game from memory if it ends
-        del games[game_id]
-        return jsonify({
-            'fen': board.fen(),
-            'is_checkmate': board.is_checkmate(),
-            'is_stalemate': board.is_stalemate(),
-            'turn': 'white' if board.turn == chess.WHITE else 'black',
-            'is_check': board.is_check(),
-            'message': 'Game over. The game has been deleted.'
-        })
+    # Determine check_square position in case of checkmate
+    check_square = None
+    if board.is_checkmate():
+        check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
+        print(f"Checkmate detected. Check square: {check_square}")
+        game['is_complete'] = True 
 
-    # Return the updated game state
     return jsonify({
         'fen': board.fen(),
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
         'turn': 'white' if board.turn == chess.WHITE else 'black',
-        'is_check': board.is_check()
+        'is_check': board.is_check(),
+        'check_square': check_square,
+        'message': 'Game over' if board.is_checkmate() or board.is_stalemate() else ''
     })
 
 
@@ -517,11 +450,20 @@ def get_game_state_multiplayer():
     game = games[game_id]
     board = game['board']
 
+    # If checkmate, determine the checking square once for both players
+    check_square = None
+    if board.is_checkmate():
+        checkers = board.checkers()
+        if checkers:
+            check_square = chess.square_name(checkers.pop())
+
     return jsonify({
         'fen': board.fen(),
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
         'turn': 'white' if board.turn == chess.WHITE else 'black',
+        'is_check': board.is_check(),
+        'check_square': check_square,
         'players': game['players']
     })
 
