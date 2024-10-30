@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Square } from './square';
 import { Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
@@ -27,7 +27,9 @@ export const Board: React.FC<{}> = () => {
     const [promotionMove, setPromotionMove] = useState<{ fromSquare: string; toSquare: string } | null>(null);
     const [showPromotionOptions, setShowPromotionOptions] = useState(false);
     const [showGameOverModal, setShowGameOverModal] = useState(false);
-
+    const [selectedSquare, setSelectedSquare] = useState<string | null>(null); // Track the selected square for keyboard navigation
+    const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece"); // Track the current move mode for keyboard navigation
+    
     const { difficulty } = useParams<Record<string, string>>();
 
     const difficultyLevel = (difficulty as Difficulty) || 'none';
@@ -65,7 +67,7 @@ export const Board: React.FC<{}> = () => {
 
     // function that launches when a move is made
     // handles promotion moves and submits the move
-    const handleMove = async (fromSquare: string, toSquare: string, piece: string) => {
+    const handleMove = useCallback(async (fromSquare: string, toSquare: string, piece: string) => {
         // forbid making a move if promotion options are shown
         if (showPromotionOptions) {
             return;
@@ -80,7 +82,77 @@ export const Board: React.FC<{}> = () => {
         } else {
             await submitMove(fromSquare, toSquare);      // Regular move submission
         }
-    };
+    }, [showPromotionOptions]);
+
+    // function that launches when a square is navigated to with keyboard
+    // it updates the selected square
+    const navigateBoard = useCallback((direction: string) => {
+        let row = selectedSquare ? parseInt(selectedSquare[1], 10) : 1;
+        let col = selectedSquare ? selectedSquare[0].charCodeAt(0) : 'a'.charCodeAt(0);
+    
+        if (direction === 'ArrowUp') row = Math.min(row + 1, 8);
+        if (direction === 'ArrowDown') row = Math.max(row - 1, 1);
+        if (direction === 'ArrowLeft') col = Math.max(col - 1, 'a'.charCodeAt(0));
+        if (direction === 'ArrowRight') col = Math.min(col + 1, 'h'.charCodeAt(0));
+    
+        setSelectedSquare(String.fromCharCode(col) + row);
+    }, [selectedSquare]);
+    
+    // function for selecting a square with keyboard
+    // based on mode it either selects a piece or a target square for a move
+    const selectSquare = useCallback(async () => {
+        if (!selectedSquare) return;
+        
+        if (moveMode === "selectingPiece") {
+            // First selection mode: fetch legal moves for the selected piece
+            const response = await fetch('http://127.0.0.1:5000/legal_moves', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ position: selectedSquare }),
+            });
+            const data = await response.json();
+        
+            if (data.legal_moves.length > 0) {
+                setSelectedPiece(selectedSquare); // Set selected piece if it has legal moves
+                setLegalMoves(data.legal_moves);
+                setMoveMode("selectingTarget"); // Switch to target selection mode
+            } else {
+                console.log('No legal moves for selected square');
+            }
+        } else if (moveMode === "selectingTarget") {
+            // Second selection mode: submit the move
+            if (selectedPiece && selectedSquare) {
+                await handleMove(selectedPiece, selectedSquare, selectedPiece);
+                setSelectedPiece(null); // Reset selection
+                setLegalMoves([]); // Clear legal moves
+                setMoveMode("selectingPiece"); // Switch back to piece selection mode
+            }
+        }
+    }, [selectedSquare, moveMode, selectedPiece, handleMove]);
+
+    // Keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (showPromotionOptions) return;
+
+            switch (event.key) {
+                case 'ArrowUp':
+                case 'ArrowDown':
+                case 'ArrowLeft':
+                case 'ArrowRight':
+                    navigateBoard(event.key);
+                    break;
+                case ' ':
+                    selectSquare();
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedSquare, selectedPiece, showPromotionOptions, navigateBoard, selectSquare]);
 
     const handlePromotionSelect = async (piece: string) => {
         if (promotionMove) {
@@ -220,14 +292,14 @@ export const Board: React.FC<{}> = () => {
                 // numbers represent empty squares
                 for (let i = 0; i < parseInt(c); i++) {
                     const pos = col + row;
-                    const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
+                    const highlighted = selectedPiece === pos || legalMoves.includes(pos) || selectedSquare === pos;  // highlight legal moves
                     squares.push(<Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} />);
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
                 }
             } else {
                 // letters represent pieces
                 const pos = col + row;
-                const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
+                const highlighted = selectedPiece === pos || legalMoves.includes(pos) || selectedSquare === pos;  // Same check here for highlighting
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
                     <Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} inCheck={inCheck}>
