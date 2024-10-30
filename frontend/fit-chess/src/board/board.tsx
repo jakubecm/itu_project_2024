@@ -4,6 +4,7 @@ import { Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
+import { useParams } from 'react-router-dom';
 
 export const SQUARE_SIZE = '50px';
 
@@ -13,7 +14,10 @@ interface GameState {
     is_checkmate: boolean;
     is_stalemate: boolean;
     is_check: boolean;
+    check_square?: string;
 }
+
+type Difficulty = 'beginner' | 'intermediate' | 'none';
 
 export const Board: React.FC<{}> = () => {
     const [loading, setLoading] = useState<boolean>(true);  // Loading state to indicate API call is in progress
@@ -23,6 +27,41 @@ export const Board: React.FC<{}> = () => {
     const [promotionMove, setPromotionMove] = useState<{ fromSquare: string; toSquare: string } | null>(null);
     const [showPromotionOptions, setShowPromotionOptions] = useState(false);
     const [showGameOverModal, setShowGameOverModal] = useState(false);
+
+    const { difficulty } = useParams<Record<string, string>>();
+
+    const difficultyLevel = (difficulty as Difficulty) || 'none';
+
+    const difficultySettings: Record<Difficulty, { skillLevel: number; depth: number }> = {
+      beginner: { skillLevel: 1, depth: 2 },
+      intermediate: { skillLevel: 10, depth: 5 },
+      none: { skillLevel: 0, depth: 0 },
+    };
+  
+    const settings = difficultySettings[difficultyLevel];
+    
+    const callAIMove = async () => {
+        try {
+          const response = await fetch('http://127.0.0.1:5000/ai_move', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ skill_level: settings.skillLevel, depth: settings.depth  }),
+          });
+    
+          if (!response.ok) {
+            throw new Error(`AI move failed: ${response.statusText}`);
+          }
+    
+          const data = await response.json();
+    
+          // Update game state with the response from the server
+          setGameState(data);
+        } catch (error) {
+          console.error('Error fetching AI move:', error);
+        }
+      };
 
     // function that launches when a move is made
     // handles promotion moves and submits the move
@@ -73,6 +112,10 @@ export const Board: React.FC<{}> = () => {
             setGameState(data);
             setSelectedPiece(null); // Reset selected piece
             setLegalMoves([]); // Reset legal moves
+
+            if (difficultyLevel !== 'none') {
+                callAIMove();
+            }
         } catch (e) {
             console.error('Failed to make a move: ', e);
         }
@@ -148,7 +191,7 @@ export const Board: React.FC<{}> = () => {
     useEffect(() => {
         if (gameState && (gameState.is_checkmate || gameState.is_stalemate)) {
             gameState.turn = gameState.turn === 'white' ? 'Black' : 'White';
-            setShowGameOverModal(true);
+            setTimeout(() => setShowGameOverModal(true), 100);
         }
     }, [gameState]);
 
@@ -185,7 +228,7 @@ export const Board: React.FC<{}> = () => {
                 // letters represent pieces
                 const pos = col + row;
                 const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
-                const inCheck = ((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check;
+                const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
                     <Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} inCheck={inCheck}>
                         <Piece type={c} position={pos} handlePick={handlePieceSelection} />

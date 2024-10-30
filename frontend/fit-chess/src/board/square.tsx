@@ -26,12 +26,24 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, handleMov
   let backgroundColor = 'yellow';  // Light square color
   if (isOver) {
     backgroundColor = 'red';  // When piece is hovering over
+    if (inCheck) {
+      console.log(backgroundColor);
+    }
   } else if (highlighted) {
       backgroundColor = 'lightgreen';  // When square is highlighted as legal move
+      if (inCheck) {
+        console.log(backgroundColor);
+      }
   } else if (inCheck) {
       backgroundColor = 'blue';  // When the piece is in check
+      if (inCheck) {
+        console.log(backgroundColor);
+      }
   } else if (isDarkSquare) {
       backgroundColor = 'brown';  // Dark square color
+      if (inCheck) {
+        console.log(backgroundColor);
+      }
   }
 
   return (

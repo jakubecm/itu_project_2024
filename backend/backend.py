@@ -14,6 +14,8 @@ swagger = Swagger(app)
 # Create a global chess board object to represent the current game
 board = chess.Board()
 
+STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
+
 @app.route('/new_game', methods=['POST'])
 def new_game():
     """
@@ -82,14 +84,20 @@ def make_move():
             return jsonify({'error': 'Illegal move'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
+    
+        # Determine check_square position in case of checkmate
+    check_square = None
+    if board.is_checkmate():
+        check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
+        print(f"Checkmate detected. Check square: {check_square}")
     # Return the updated board state
     return jsonify({
         'fen': board.fen(),  # Updated board position in FEN format
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
         'turn': 'white' if board.turn == chess.WHITE else 'black',
-        'is_check': board.is_check()
+        'is_check': board.is_check(),
+        'check_square': check_square
     })
 
 @app.route('/simulate_move', methods=['POST'])
@@ -168,39 +176,31 @@ def get_game_state():
 @app.route('/ai_move', methods=['POST'])
 def ai_move():
     """
-    Make a move for the AI opponent
-    ---
-    responses:
-      200:
-        description: AI move is made and the game state is updated
-        schema:
-          type: object
-          properties:
-            fen:
-              type: string
-            is_checkmate:
-              type: boolean
-            is_stalemate:
-              type: boolean
-            ai_move:
-              type: string
-            turn:
-              type: string
+    AI move endpoint which takes skill level and depth as parameters.
     """
     global board
-    engine = chess.engine.SimpleEngine.popen_uci("/usr/games/stockfish")  # Assuming Stockfish is installed
-    ai_move = engine.play(board, chess.engine.Limit(time=2.0))  # AI makes its move in 2 seconds
-    board.push(ai_move.move)
-    
-    engine.quit()
+    skill_level = request.json.get("skill_level", 5)  # Default to skill level 5
+    depth = request.json.get("depth", 2)              # Default to depth 2
 
-    return jsonify({
-        'fen': board.fen(),  # Updated board position in FEN format
-        'is_checkmate': board.is_checkmate(),
-        'is_stalemate': board.is_stalemate(),
-        'ai_move': board.san(ai_move.move),  # Send AI move in SAN format
-        'turn': 'white' if board.turn == chess.WHITE else 'black'
-    })
+    try:
+        with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
+            # Configure Stockfish with provided skill level
+            engine.configure({"Skill Level": skill_level})
+            
+            # Generate the move with specified depth
+            limit = chess.engine.Limit(depth=depth)
+            ai_move = engine.play(board, limit)
+            board.push(ai_move.move)
+
+            return jsonify({
+                'fen': board.fen(),
+                'ai_move': ai_move.move.uci(),
+                'is_checkmate': board.is_checkmate(),
+                'is_stalemate': board.is_stalemate(),
+                'turn': 'white' if board.turn == chess.WHITE else 'black'
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/legal_moves', methods=['POST'])
 def legal_moves():
