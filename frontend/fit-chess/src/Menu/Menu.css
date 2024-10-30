@@ -96,3 +96,18 @@ button:active {
   width: 170px;
   height: 170px;
 }
+
+.main-menu .menu-buttons:nth-of-type(2) {
+  margin-top: -10px; 
+}
+
+.menu-buttons {
+  margin: 5px 0; 
+}
+
+.main-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; 
+}
