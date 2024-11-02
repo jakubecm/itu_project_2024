@@ -5,8 +5,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
 import { useParams } from 'react-router-dom';
+import './Board.css';
 
-export const SQUARE_SIZE = '50px';
+export const SQUARE_SIZE = '80px';
 
 interface GameState {
     fen: string;
@@ -314,7 +315,7 @@ export const Board: React.FC<{}> = () => {
     };
 
     return (
-        // DndProvider is a wrapper component that sets up the context for drag and drop
+        <div className='board-container'>
         <DndProvider backend={HTML5Backend}>
             turn: {gameState.turn}
             <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
@@ -329,5 +330,6 @@ export const Board: React.FC<{}> = () => {
                 )}
             </div>
         </DndProvider>
+        </div>
     );
 }

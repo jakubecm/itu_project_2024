@@ -23,36 +23,36 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, handleMov
   // evil hacks to check if the square is dark or light
   const isDarkSquare = (position.charCodeAt(0) + parseInt(position[1])) % 2 === 1;
 
-  let backgroundColor = 'yellow';  // Light square color
+  let sqrClass = 'white-square';  // Light square color
   if (isOver) {
-    backgroundColor = 'red';  // When piece is hovering over
+    sqrClass = 'square-hovered';  // When piece is hovering over
     if (inCheck) {
-      console.log(backgroundColor);
+      console.log(sqrClass);
     }
   } else if (highlighted) {
-      backgroundColor = 'lightgreen';  // When square is highlighted as legal move
+    sqrClass = 'square-highlighted';  // When square is highlighted as legal move
       if (inCheck) {
-        console.log(backgroundColor);
+        console.log(sqrClass);
       }
   } else if (inCheck) {
-      backgroundColor = 'blue';  // When the piece is in check
+    sqrClass = 'square-check';  // When the piece is in check
       if (inCheck) {
-        console.log(backgroundColor);
+        console.log(sqrClass);
       }
   } else if (isDarkSquare) {
-      backgroundColor = 'brown';  // Dark square color
+    sqrClass = 'black-square';  // Dark square color
       if (inCheck) {
-        console.log(backgroundColor);
+        console.log(sqrClass);
       }
   }
 
   return (
     <div
       ref={dropRef}
+      className={sqrClass}
       style={{
         width: SQUARE_SIZE,
         height: SQUARE_SIZE,
-        backgroundColor: backgroundColor,
         position: 'relative',
       }}
     >

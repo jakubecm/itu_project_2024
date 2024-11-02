@@ -49,7 +49,7 @@ export const Piece: React.FC<PieceProps> = ({ type, position, handlePick }) => {
                 cursor: 'default',
                 transform: 'translate(0, 0)'  // hides the background when dragging
             }}>
-            <img src={pieceImg} alt={type} height={50} width={50} />
+            <img src={pieceImg} alt={type} height={SQUARE_SIZE} width={SQUARE_SIZE} />
         </div>
     )
 }
@@ -66,9 +66,10 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
     const bishop = turn === 'white' ? 'B' : 'b';
     const knight = turn === 'white' ? 'N' : 'n';
     const position = calculatePosition(promotionSqr);
+    const squareSizeNum = parseInt(SQUARE_SIZE.slice(0, -2));
     const X = position.x + 'px';
-    const Y = turn === 'white' ? (position.y + 50) + 'px' : // position the promotion options below the pawn
-        (position.y - 200) + 'px';  // position the promotion options above the pawn
+    const Y = turn === 'white' ? (position.y + squareSizeNum) + 'px' : // position the promotion options below the pawn
+        (position.y - 4 * squareSizeNum) + 'px';  // position the promotion options above the pawn
 
     // tyto divy se musi nacpat do componentu nebo alespon css classy ale jsem liny :sob:
     return (
@@ -79,28 +80,28 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
                 backgroundColor: "green",
                 position: 'relative',
                 cursor: 'pointer',
-            }} onClick={() => onSelect('q')}><img src={pieceSrc[queen]} alt={'pQ'} height={50} width={50} /></div>
+            }} onClick={() => onSelect('q')}><img src={pieceSrc[queen]} alt={'pQ'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
             <div style={{
                 width: SQUARE_SIZE,
                 height: SQUARE_SIZE,
                 backgroundColor: "green",
                 position: 'relative',
                 cursor: 'pointer',
-            }} onClick={() => onSelect('r')}><img src={pieceSrc[rook]} alt={'pR'} height={50} width={50} /></div>
+            }} onClick={() => onSelect('r')}><img src={pieceSrc[rook]} alt={'pR'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
             <div style={{
                 width: SQUARE_SIZE,
                 height: SQUARE_SIZE,
                 backgroundColor: "green",
                 position: 'relative',
                 cursor: 'pointer',
-            }} onClick={() => onSelect('b')}><img src={pieceSrc[bishop]} alt={'pB'} height={50} width={50} /></div>
+            }} onClick={() => onSelect('b')}><img src={pieceSrc[bishop]} alt={'pB'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
             <div style={{
                 width: SQUARE_SIZE,
                 height: SQUARE_SIZE,
                 backgroundColor: "green",
                 position: 'relative',
                 cursor: 'pointer',
-            }} onClick={() => onSelect('n')}><img src={pieceSrc[knight]} alt={'pN'} height={50} width={50} /></div>
+            }} onClick={() => onSelect('n')}><img src={pieceSrc[knight]} alt={'pN'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
         </div>
     );
 };
