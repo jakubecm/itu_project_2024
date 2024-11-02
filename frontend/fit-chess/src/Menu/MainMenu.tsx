@@ -15,6 +15,11 @@ function MainMenu() {
           <button>New Game</button>
         </Link>
       </div>
+      <div className="menu-buttons">
+        <Link to="/tutorial">
+          <button>Tutorial</button>
+        </Link>
+      </div>
     </div>
   );
 }
