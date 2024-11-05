@@ -58,7 +58,7 @@ def new_tutorial():
     """
     global board
     board = chess.Board()  # Reset the board to the starting position
-    board.set_fen("rnbq1bnr/pppppppp/8/8/8/8/PPPPPPPP/RNB2BNR b KQkq - 0 1")  
+    board.set_fen("8/8/8/8/8/8/8/R7 w KQkq - 0 1")  
     return jsonify({
         'message': 'New game started',
         'fen': board.fen(),  # Return the FEN notation for the starting position
@@ -123,6 +123,51 @@ def make_move():
         'turn': 'white' if board.turn == chess.WHITE else 'black',
         'is_check': board.is_check(),
         'check_square': check_square
+    })
+
+@app.route('/move_white', methods=['POST'])
+def make_move_white():
+    """
+    Make a move in the chess game
+    """
+    global board
+    move_uci = request.json.get('move')  
+    try:
+        move = chess.Move.from_uci(move_uci)  
+        if board.turn == chess.WHITE and move in board.legal_moves: 
+            board.push(move)  
+            board.turn = chess.WHITE  
+        else:
+            return jsonify({'error': 'Illegal move or it is not white\'s turn'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+    return jsonify({
+        'fen': board.fen(), 
+        'is_checkmate': board.is_checkmate(),
+        'is_stalemate': board.is_stalemate(),
+        'turn': 'white',
+        'is_check': board.is_check()
+    })
+
+@app.route('/set_fen', methods=['POST'])
+def set_fen():
+    """
+    Set a custom FEN position
+    """
+    global board
+    new_fen = request.json.get('fen')
+    try:
+        board.set_fen(new_fen)
+    except ValueError:
+        return jsonify({'error': 'Invalid FEN format'}), 400
+
+    return jsonify({
+        'fen': board.fen(),
+        'is_checkmate': board.is_checkmate(),
+        'is_stalemate': board.is_stalemate(),
+        'turn': 'white' if board.turn == chess.WHITE else 'black',
+        'is_check': board.is_check()
     })
 
 @app.route('/simulate_move', methods=['POST'])
