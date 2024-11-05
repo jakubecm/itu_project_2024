@@ -21,6 +21,7 @@ interface PieceProps {
     type: string;
     position: string;  // the 'from' position for the drag
     handlePick: (position: string) => void;
+    onClick?: () => void;
 }
 
 const pieceSrc: { [key: string]: string } = {
@@ -28,7 +29,7 @@ const pieceSrc: { [key: string]: string } = {
     'P': P, 'N': N, 'B': B, 'R': R, 'Q': Q, 'K': K,
 };
 
-export const Piece: React.FC<PieceProps> = ({ type, position, handlePick }) => {
+export const Piece: React.FC<PieceProps> = ({ type, position, handlePick, onClick }) => {
     const [{ isDragging }, dragRef] = useDrag({
         type: 'piece',
         item: () => {
@@ -43,12 +44,15 @@ export const Piece: React.FC<PieceProps> = ({ type, position, handlePick }) => {
     const pieceImg = pieceSrc[type];
 
     return (
-        <div ref={dragRef}
+        <div 
+            ref={dragRef}
             style={{
                 opacity: isDragging ? 0.5 : 1,
                 cursor: 'default',
-                transform: 'translate(0, 0)'  // hides the background when dragging
-            }}>
+                transform: 'translate(0, 0)',  // hides the background when dragging
+            }}
+            onClick={onClick}  // Volitelné `onClick` pro jednoduché kliknutí
+        >
             <img src={pieceImg} alt={type} height={SQUARE_SIZE} width={SQUARE_SIZE} />
         </div>
     )

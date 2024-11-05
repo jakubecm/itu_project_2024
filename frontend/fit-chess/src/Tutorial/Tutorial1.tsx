@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Square } from '../board/square';
+import { Square } from '../board/Square';
 import { Piece } from '../board/piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import './TutorialBoard.css';
 
 
-
-export const SQUARE_SIZE = '50px';
+export const SQUARE_SIZE = '80px';
 
 interface GameState {
     fen: string;
@@ -52,6 +52,7 @@ export const TutorialBoard: React.FC<{}> = () => {
         return <div>Loading...</div>;
     }
 
+
     const handlePieceSelection = async (position: string) => {
         setSelectedPiece(position);
 
@@ -70,7 +71,7 @@ export const TutorialBoard: React.FC<{}> = () => {
 
     const handleMove = async (fromSquare: string, toSquare: string) => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/move', {
+            const response = await fetch('http://127.0.0.1:5000/move_white', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ move: `${fromSquare}${toSquare}` }),
@@ -86,6 +87,24 @@ export const TutorialBoard: React.FC<{}> = () => {
         }
     };
 
+    const setFenString = async (newFen: string) => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/set_fen', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fen: newFen })
+            });
+            const data = await response.json();
+    
+            if (data.error) {
+                console.error("Invalid FEN format");
+            } else {
+                setGameState(data);  // Aktualizace stavu hry s novým FEN
+            }
+        } catch (error) {
+            console.error("Failed to set FEN:", error);
+        }
+    };
 
 
     const renderSquares = () => {
@@ -105,7 +124,7 @@ export const TutorialBoard: React.FC<{}> = () => {
                                 key={squarePos}
                                 position={squarePos}
                                 highlighted={legalMoves.includes(squarePos)}
-                                handleMove={handleMove} // Přidejte handleMove zde
+                                handleMove={handleMove} 
                             />
                         );
                         col = String.fromCharCode(col.charCodeAt(0) + 1);
@@ -117,7 +136,7 @@ export const TutorialBoard: React.FC<{}> = () => {
                             key={squarePos}
                             position={squarePos}
                             highlighted={legalMoves.includes(squarePos)}
-                            handleMove={handleMove} // handleMove již zde máte
+                            handleMove={handleMove} 
                         >
                             <Piece type={char} position={squarePos} handlePick={() => handlePieceSelection(squarePos)} />
                         </Square>
@@ -135,9 +154,19 @@ export const TutorialBoard: React.FC<{}> = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div> Turn: {gameState.turn} </div>
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})` }}>
-                {renderSquares()}
+            <div className='board-container'>
+                <div className="piece-row">
+                    {/* Figury s nastavením FEN při kliknutí */}
+                    <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R7 w KQkq - 0 1')} />
+        <Piece type="N" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/N7 w KQkq - 0 1')} />
+        <Piece type="B" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/B7 w KQkq - 0 1')} />
+        <Piece type="Q" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/Q7 w KQkq - 0 1')} />
+        <Piece type="K" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/K7 w KQkq - 0 1')} />
+        <Piece type="P" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/P7 w KQkq - 0 1')} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})` }}>
+                    {renderSquares()}
+                </div>
             </div>
         </DndProvider>
     );
