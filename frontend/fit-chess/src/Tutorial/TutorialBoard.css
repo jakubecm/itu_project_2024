@@ -1,0 +1,12 @@
+.board-container {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+}
+
+.piece-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px; /* Odstup mezi řádkem figurek a šachovnicí */
+}
