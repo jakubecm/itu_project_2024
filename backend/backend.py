@@ -272,17 +272,22 @@ def ai_move():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/legal_moves', methods=['GET'])
+@app.route('/legal_moves', methods=['POST'])
 def legal_moves():
     """
     Get all legal moves for a piece at a specific position
     ---
     parameters:
-      - name: position
-        in: query
+      - name: move
+        in: body
         type: string
         required: true
         description: The position of the piece (e.g., "e2")
+        schema:
+          type: object
+          properties:
+            position:
+              type: string
     responses:
       200:
         description: All legal moves for the piece
@@ -296,7 +301,7 @@ def legal_moves():
                 description: The legal move in UCI format (e.g., "e2e4")
     """
     global board
-    position = request.args.get('position')  # Get the position (e.g., "e2") from query parameters
+    position = request.json.get('position')  # Get the position (e.g., "e2") from query parameters
     if not position:
         return jsonify({'error': 'Position is required'}), 400
 
