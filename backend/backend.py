@@ -16,7 +16,7 @@ board = chess.Board()
 
 STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
 
-@app.route('/new_game', methods=['POST'])
+@app.route('/new_game', methods=['GET'])
 def new_game():
     """
     Start a new chess game
@@ -40,10 +40,10 @@ def new_game():
         'turn': 'white'
     })
 
-@app.route('/new_tutorial', methods=['POST'])
+@app.route('/new_tutorial', methods=['GET'])
 def new_tutorial():
     """
-    Start a new chess game
+    Start a new tutorial game
     ---
     responses:
       200:
@@ -243,7 +243,7 @@ def get_game_state():
         'turn': 'white' if board.turn == chess.WHITE else 'black'
     })
 
-@app.route('/ai_move', methods=['POST'])
+@app.route('/ai_move', methods=['GET'])
 def ai_move():
     """
     AI move endpoint which takes skill level and depth as parameters.
@@ -272,7 +272,7 @@ def ai_move():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/legal_moves', methods=['POST'])
+@app.route('/legal_moves', methods=['GET'])
 def legal_moves():
     """
     Get all legal moves for a piece at a specific position
@@ -296,7 +296,7 @@ def legal_moves():
                 description: The legal move in UCI format (e.g., "e2e4")
     """
     global board
-    position = request.json.get('position')  # Get the position (e.g., "e2") from query parameters
+    position = request.args.get('position')  # Get the position (e.g., "e2") from query parameters
     if not position:
         return jsonify({'error': 'Position is required'}), 400
 
