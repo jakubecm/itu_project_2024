@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Square } from './Square';
+import { Square } from './square';
 import { Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -20,7 +20,7 @@ interface GameState {
 
 type Difficulty = 'beginner' | 'intermediate' | 'none';
 
-export const Board: React.FC<{}> = () => {
+export const Board: React.FC<unknown> = () => {
     const [loading, setLoading] = useState<boolean>(true);  // Loading state to indicate API call is in progress
     const [gameState, setGameState] = useState<GameState>(); // Track the game state
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Track the selected piece

@@ -14,7 +14,7 @@ import r from '../assets/Chess_rdt45.svg';
 import q from '../assets/Chess_qdt45.svg';
 import k from '../assets/Chess_kdt45.svg';
 import { SQUARE_SIZE } from './board';
-import { calculatePosition } from './square';
+import { calculatePosition } from './utils';
 
 
 interface PieceProps {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Square } from './Square';
-import { Piece } from './Piece';
+import { Square } from './square';
+import { Piece } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
