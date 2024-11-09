@@ -7,6 +7,7 @@ import GameOverModal from '../Effects/GameOverModal';
 import './Board.css'; // Apply board styling consistently
 
 export const SQUARE_SIZE = 80;
+document.documentElement.style.setProperty('--square-size', `${SQUARE_SIZE}px`);
 
 interface GameState {
     fen: string;
@@ -35,9 +36,11 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece");
 
     const fetchGameState = async () => {
+        if (showPromotionOptions) return;
         try {
             const response = await fetch(`http://${serverIp}:5000/multiplayer/game_state?game_id=${gameId}`);
             const data = await response.json();
+
             setGameState(data);
 
             if (data.is_checkmate || data.is_stalemate) {
@@ -53,12 +56,36 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
 
         const isPromotion = (piece === 'P' && toSquare[1] === '8') || (piece === 'p' && toSquare[1] === '1');
         if (isPromotion) {
+            simulateMove(`${fromSquare}${toSquare}`);
             setPromotionMove({ fromSquare, toSquare });
             setShowPromotionOptions(true);
         } else {
             await submitMove(fromSquare, toSquare);
         }
     };
+
+    const simulateMove = async (move: string) => {
+        try {
+            const response = await fetch(`http://${serverIp}:5000/simulate_move`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ move }),
+            });
+            const data = await response.json();
+            if (data.error) {
+                console.error(data.error);
+                return;
+            }
+
+            setGameState(data);
+            setSelectedPiece(null); // Reset selected piece
+            setLegalMoves([]); // Reset legal moves
+        } catch (e) {
+            console.error('Failed to make a move: ', e);
+        }
+    }
 
     const submitMove = async (fromSquare: string, toSquare: string) => {
         if (gameState?.turn !== playerColor || gameState?.is_checkmate) return;
@@ -233,33 +260,21 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     };
 
     useEffect(() => {
-        fetchGameState();
-        const intervalId = setInterval(fetchGameState, 1000);
+        const intervalId = setInterval(() => {
+            if (!showPromotionOptions) {
+                fetchGameState();
+            }
+        }, 1000);
         return () => clearInterval(intervalId);
-    }, [gameId]);
+    }, [gameId, showPromotionOptions]);
 
     return (
-        <div>
+        <div className='board-container'>
             <DndProvider backend={HTML5Backend}>
                 <div>Turn: {gameState?.turn}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE}px)`, position: 'relative' }}>
                     {renderSquares()}
-                    {showPromotionOptions && promotionMove && (
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: `${(8 - parseInt(promotionMove.toSquare[1])) * SQUARE_SIZE}px`,
-                                left: `${(promotionMove.toSquare[0].charCodeAt(0) - 'a'.charCodeAt(0)) * SQUARE_SIZE}px`,
-                                zIndex: 1,
-                            }}
-                        >
-                            <PromotionOptions
-                                onSelect={handlePromotionSelect}
-                                turn={gameState?.turn}
-                                promotionSqr={promotionMove.toSquare}
-                            />
-                        </div>
-                    )}
+                    {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare}/>}
                     {!modalClosed && hasGameEnded && (
                         <GameOverModal
                             message={
