@@ -190,6 +190,7 @@ export const Board: React.FC<unknown> = () => {
                 console.error(data.error);
                 setSelectedPiece(null); // Reset selected piece
                 setLegalMoves([]); // Reset legal moves
+                setMoveMode('selectingPiece');
                 return;
             }
 
@@ -240,15 +241,7 @@ export const Board: React.FC<unknown> = () => {
 
         setSelectedSquare(null); // Reset selected square because it's played with mouse
         setSelectedPiece(position);
-        const response = await fetch('http://127.0.0.1:5000/legal_moves', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ position }),
-        });
-        const data = await response.json();
-        setLegalMoves(data.legal_moves);
+        fetchLegalMoves(position);
     }
 
     const handleSquareClick = useCallback((position: string) => {
