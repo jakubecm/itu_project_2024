@@ -4,12 +4,13 @@ import { SQUARE_SIZE } from './board';
 interface SquareProps {
     position: string;  // This is the 'to' position
     highlighted: boolean;
+    selected: boolean; // bool for highlighting the selected square
     handleMove: (from: string, to: string, piece: string) => void; // function that launches when a move is made
     inCheck?: boolean;
     children?: React.ReactNode;  // Piece component
 }
 
-export const Square: React.FC<SquareProps> = ({ position, highlighted, handleMove, inCheck, children }) => {
+export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children }) => {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'piece',
     drop: (item: { position: string, type: string }) => {
@@ -30,7 +31,17 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, handleMov
       console.log(sqrClass);
     }
   } else if (highlighted) {
-    sqrClass = 'square-highlighted';  // When square is highlighted as legal move
+
+    if(selected) {
+      sqrClass = 'square-highlighted-current';
+    } else {
+      sqrClass = 'square-highlighted';  // When square is highlighted as legal move
+    }
+      if (inCheck) {
+        console.log(sqrClass);
+      }
+  } else if (selected) {
+    sqrClass = 'square-current';  // When square is selected
       if (inCheck) {
         console.log(sqrClass);
       }

@@ -10,6 +10,15 @@
     background: lightgreen;
 }
 
+.square-current {
+    box-shadow: inset 0 0 0 3px darkblue;
+}
+
+.square-highlighted-current {
+    background: lightgreen;
+    box-shadow: inset 0 0 0 3px darkblue;
+}
+
 .square-check {
     background: blue;
 }

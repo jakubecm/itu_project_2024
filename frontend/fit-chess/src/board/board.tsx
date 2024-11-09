@@ -293,17 +293,19 @@ export const Board: React.FC<{}> = () => {
                 // numbers represent empty squares
                 for (let i = 0; i < parseInt(c); i++) {
                     const pos = col + row;
-                    const highlighted = selectedPiece === pos || legalMoves.includes(pos) || selectedSquare === pos;  // highlight legal moves
-                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} />);
+                    const selected = selectedSquare === pos;  // highlight selected square
+                    const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
+                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} />);
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
                 }
             } else {
                 // letters represent pieces
                 const pos = col + row;
-                const highlighted = selectedPiece === pos || legalMoves.includes(pos) || selectedSquare === pos;  // Same check here for highlighting
+                const selected = selectedSquare === pos;  // highlight selected square
+                const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
-                    <Square key={pos} position={pos} highlighted={highlighted} handleMove={handleMove} inCheck={inCheck}>
+                    <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck}>
                         <Piece type={c} position={pos} handlePick={handlePieceSelection} />
                     </Square>
                 );
