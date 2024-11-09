@@ -7,6 +7,7 @@ import './TutorialBoard.css';
 
 
 export const SQUARE_SIZE = '80px';
+document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
 
 interface GameState {
     fen: string;

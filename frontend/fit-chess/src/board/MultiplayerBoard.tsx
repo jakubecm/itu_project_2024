@@ -7,6 +7,7 @@ import GameOverModal from '../Effects/GameOverModal';
 import './Board.css'; // Apply board styling consistently
 
 export const SQUARE_SIZE = 80;
+document.documentElement.style.setProperty('--square-size', `${SQUARE_SIZE}px`);
 
 interface GameState {
     fen: string;
