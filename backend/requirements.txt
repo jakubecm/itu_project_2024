@@ -1,0 +1,4 @@
+flask
+chess
+flasgger
+flask_cors
