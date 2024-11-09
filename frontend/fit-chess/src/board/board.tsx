@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
 import { useParams } from 'react-router-dom';
 import './Board.css';
+import ChatBox from '../Multiplayer/ChatBox';
 
 export const SQUARE_SIZE = '80px';
 
@@ -376,6 +377,7 @@ export const Board: React.FC<unknown> = () => {
 
     return (
         <div className='board-container'>
+        <ChatBox playerColor={gameState.turn} />
         <DndProvider backend={HTML5Backend}>
             turn: {gameState.turn}
             <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>

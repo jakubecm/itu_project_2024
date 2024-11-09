@@ -4,17 +4,29 @@ import chess.engine
 from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 import uuid
 import socket
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains to make requests
+socketio = SocketIO(app, cors_allowed_origins="*")
 swagger = Swagger(app)
 
 # Create a global chess board object to represent the current game
 board = chess.Board()
 
 STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
+
+@socketio.on('message')
+def handle_message(data):
+    # Expect data to include 'message' and 'player_color'
+    msg = data.get('message')
+    player_color = data.get('player_color', 'Unknown')
+    
+    print(f'{player_color}: {msg}')
+    # Broadcast the message along with player color
+    emit('message', {'message': msg, 'player_color': player_color}, broadcast=True)
 
 @app.route('/new_game', methods=['GET'])
 def new_game():
@@ -644,4 +656,5 @@ def leave_game():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+
