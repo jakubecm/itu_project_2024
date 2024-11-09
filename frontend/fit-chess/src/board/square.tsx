@@ -1,5 +1,6 @@
 import { useDrop } from 'react-dnd';
 import { SQUARE_SIZE } from './board';
+import { useState } from 'react';
 
 interface SquareProps {
     position: string;  // This is the 'to' position
@@ -12,6 +13,7 @@ interface SquareProps {
 }
 
 export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children, onClick }) => {
+  const [isHovered, setIsHovered] = useState(false); // State for hovering over the square
   const [{ isOver }, dropRef] = useDrop({
     accept: 'piece',
     drop: (item: { position: string, type: string }) => {
@@ -27,6 +29,7 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, selected,
 
   const getClassName = () => {
     if (isOver) return 'square-hovered';  // When piece is hovering over
+    if (highlighted && isHovered) return 'square-highlighted-hover';  // When square is highlighted and hovered
     if (highlighted) return selected ? 'square-highlighted-current' : 'square-highlighted';  // When square is highlighted as legal move
     if (selected) return 'square-current';  // When square is selected
     if (inCheck) return 'square-check';  // When the piece is in check
@@ -40,6 +43,8 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, selected,
       ref={dropRef}
       className={sqrClass}
       onClick={() => onClick(position)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         width: SQUARE_SIZE,
         height: SQUARE_SIZE,

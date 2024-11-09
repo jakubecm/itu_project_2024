@@ -244,19 +244,46 @@ export const Board: React.FC<unknown> = () => {
         fetchLegalMoves(position);
     }
 
-    const handleSquareClick = useCallback((position: string) => {
+    const handleSquareClick = useCallback(async (position: string) => {
+
         if (moveMode === 'selectingPiece') {
 
-          setSelectedSquare(position);
-          setMoveMode('selectingTarget');
-          fetchLegalMoves(position);
+            const moves = await fetchLegalMoves(position);
+            setSelectedSquare(position);
+            
+            if(moves.length > 0){
+                setMoveMode('selectingTarget');
+            }
+            else{
+                setMoveMode('selectingPiece');
+            }
         } else if (moveMode === 'selectingTarget' && selectedSquare) {
 
-          handleMove(selectedSquare, position, selectedSquare[0]);
-          setSelectedSquare(null);
-          setMoveMode('selectingPiece');
+            // If the player clicks on the selected square, deselect it
+            if(selectedSquare === position){
+                setSelectedSquare(null);
+                setSelectedPiece(null);
+                setLegalMoves([]);
+                setMoveMode('selectingPiece');
+                return;
+            }
+
+            const moves = await fetchLegalMoves(position); // Check if new position has legal moves
+
+            if (moves.length > 0) {
+                // If the player click on another square that has legal moves, update to that square and show its legal moves
+                setSelectedSquare(position);
+                setLegalMoves(moves);
+                setMoveMode('selectingTarget');
+
+            } else if (selectedSquare) {
+                // Attempt to move to the clicked position if it’s not a piece
+                handleMove(selectedSquare, position, '');
+                setSelectedSquare(null);
+                setMoveMode('selectingPiece');
+            }
         }
-      }, [selectedSquare, moveMode, handleMove]);
+      }, [moveMode, selectedSquare, handleMove]);
       
       const fetchLegalMoves = async (selectedSquare: string) => {
         const response = await fetch('http://127.0.0.1:5000/legal_moves', {
@@ -267,6 +294,7 @@ export const Board: React.FC<unknown> = () => {
 
         const data = await response.json();
         setLegalMoves(data.legal_moves);
+        return data.legal_moves;
       };
 
 
