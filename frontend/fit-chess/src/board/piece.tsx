@@ -15,6 +15,7 @@ import q from '../assets/Chess_qdt45.svg';
 import k from '../assets/Chess_kdt45.svg';
 import { SQUARE_SIZE } from './board';
 import { calculatePosition } from './utils';
+import './Board.css';
 
 
 interface PieceProps {
@@ -44,7 +45,7 @@ export const Piece: React.FC<PieceProps> = ({ type, position, handlePick, onClic
     const pieceImg = pieceSrc[type];
 
     return (
-        <div 
+        <div
             ref={dragRef}
             style={{
                 opacity: isDragging ? 0.5 : 1,
@@ -78,34 +79,10 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
     // tyto divy se musi nacpat do componentu nebo alespon css classy ale jsem liny :sob:
     return (
         <div style={{ display: 'flex', flexDirection: 'column', position: 'absolute', left: X, top: Y }}>
-            <div style={{
-                width: SQUARE_SIZE,
-                height: SQUARE_SIZE,
-                backgroundColor: "green",
-                position: 'relative',
-                cursor: 'pointer',
-            }} onClick={() => onSelect('q')}><img src={pieceSrc[queen]} alt={'pQ'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
-            <div style={{
-                width: SQUARE_SIZE,
-                height: SQUARE_SIZE,
-                backgroundColor: "green",
-                position: 'relative',
-                cursor: 'pointer',
-            }} onClick={() => onSelect('r')}><img src={pieceSrc[rook]} alt={'pR'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
-            <div style={{
-                width: SQUARE_SIZE,
-                height: SQUARE_SIZE,
-                backgroundColor: "green",
-                position: 'relative',
-                cursor: 'pointer',
-            }} onClick={() => onSelect('b')}><img src={pieceSrc[bishop]} alt={'pB'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
-            <div style={{
-                width: SQUARE_SIZE,
-                height: SQUARE_SIZE,
-                backgroundColor: "green",
-                position: 'relative',
-                cursor: 'pointer',
-            }} onClick={() => onSelect('n')}><img src={pieceSrc[knight]} alt={'pN'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></div>
+            <button className="promotion-button" onClick={() => onSelect('q')}><img src={pieceSrc[queen]} alt={'pQ'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></button>
+            <button className="promotion-button" onClick={() => onSelect('r')}><img src={pieceSrc[rook]} alt={'pR'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></button>
+            <button className="promotion-button" onClick={() => onSelect('b')}><img src={pieceSrc[bishop]} alt={'pB'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></button>
+            <button className="promotion-button" onClick={() => onSelect('n')}><img src={pieceSrc[knight]} alt={'pN'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></button>
         </div>
     );
 };
