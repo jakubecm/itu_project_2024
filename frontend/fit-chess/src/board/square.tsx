@@ -8,9 +8,10 @@ interface SquareProps {
     handleMove: (from: string, to: string, piece: string) => void; // function that launches when a move is made
     inCheck?: boolean;
     children?: React.ReactNode;  // Piece component
+    onClick: (position: string) => void;  // function that launches when a square is clicked
 }
 
-export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children }) => {
+export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children, onClick }) => {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'piece',
     drop: (item: { position: string, type: string }) => {
@@ -61,6 +62,7 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, selected,
     <div
       ref={dropRef}
       className={sqrClass}
+      onClick={() => onClick(position)}
       style={{
         width: SQUARE_SIZE,
         height: SQUARE_SIZE,

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Square } from './square';
+import { Square } from './Square';
 import { Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -251,6 +251,31 @@ export const Board: React.FC<{}> = () => {
         setLegalMoves(data.legal_moves);
     }
 
+    const handleSquareClick = useCallback((position: string) => {
+        if (moveMode === 'selectingPiece') {
+
+          setSelectedSquare(position);
+          setMoveMode('selectingTarget');
+          fetchLegalMoves(position);
+        } else if (moveMode === 'selectingTarget' && selectedSquare) {
+
+          handleMove(selectedSquare, position, selectedSquare[0]);
+          setSelectedSquare(null);
+          setMoveMode('selectingPiece');
+        }
+      }, [selectedSquare, moveMode, handleMove]);
+      
+      const fetchLegalMoves = async (selectedSquare: string) => {
+        const response = await fetch('http://127.0.0.1:5000/legal_moves', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ position: selectedSquare }),
+        });
+
+        const data = await response.json();
+        setLegalMoves(data.legal_moves);
+      };
+
 
     // start a new game by calling the backend
     const startNewGame = async () => {
@@ -307,7 +332,7 @@ export const Board: React.FC<{}> = () => {
                     const pos = col + row;
                     const selected = selectedSquare === pos;  // highlight selected square
                     const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
-                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} />);
+                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} onClick={handleSquareClick} />);
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
                 }
             } else {
@@ -317,7 +342,7 @@ export const Board: React.FC<{}> = () => {
                 const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
-                    <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck}>
+                    <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck} onClick={handleSquareClick}>
                         <Piece type={c} position={pos} handlePick={handlePieceSelection} />
                     </Square>
                 );
