@@ -169,6 +169,13 @@ export const Board: React.FC<{}> = () => {
     const submitMove = async (fromSquare: string, toSquare: string) => {
         try {
             const move = fromSquare === toSquare ? '0000' : `${fromSquare}${toSquare}`;
+
+            if (move === '0000') {
+                setSelectedPiece(null); // Reset selected piece
+                setLegalMoves([]); // Reset legal moves
+                return;
+            }
+
             const response = await fetch('http://127.0.0.1:5000/move', {
                 method: 'POST',
                 headers: {
@@ -176,9 +183,13 @@ export const Board: React.FC<{}> = () => {
                 },
                 body: JSON.stringify({ move }),
             });
+            
             const data = await response.json();
+
             if (data.error) {
                 console.error(data.error);
+                setSelectedPiece(null); // Reset selected piece
+                setLegalMoves([]); // Reset legal moves
                 return;
             }
 
@@ -227,6 +238,7 @@ export const Board: React.FC<{}> = () => {
             return;
         }
 
+        setSelectedSquare(null); // Reset selected square because it's played with mouse
         setSelectedPiece(position);
         const response = await fetch('http://127.0.0.1:5000/legal_moves', {
             method: 'POST',
