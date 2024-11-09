@@ -243,7 +243,7 @@ def get_game_state():
         'turn': 'white' if board.turn == chess.WHITE else 'black'
     })
 
-@app.route('/ai_move', methods=['GET'])
+@app.route('/ai_move', methods=['POST'])
 def ai_move():
     """
     AI move endpoint which takes skill level and depth as parameters.
