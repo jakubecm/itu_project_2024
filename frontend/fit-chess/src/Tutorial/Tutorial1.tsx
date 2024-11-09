@@ -28,7 +28,7 @@ export const TutorialBoard: React.FC<{}> = () => {
     const startNewGame = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/new_tutorial', {
-                method: 'POST',
+                method: 'GET',
             });
             const data = await response.json();
             setGameState(data);
