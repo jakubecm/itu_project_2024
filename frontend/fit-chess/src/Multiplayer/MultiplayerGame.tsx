@@ -39,17 +39,17 @@ export const MultiplayerGame: React.FC = () => {
     };
 
     return (
-        <div className="server-browser-container">
+        <>
             {!gameId ? (
-                <>
+                <div className="server-browser-container">
                 <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
                 <h1 className="title">Server Browser</h1>
                     <ServerBrowser serverIp={serverIp!} onJoin={handleJoin} />
                     <button className="create-button" onClick={createGame}>Create New Game</button>
-                </>
+                </div>
             ) : (
                 <JoinGame gameId={gameId} serverIp={serverIp!} onLeave={handleLeaveGame} />
             )}
-        </div>
+        </>
     );
 };

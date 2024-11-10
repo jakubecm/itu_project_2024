@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MultiplayerBoard } from '../board/MultiplayerBoard';
+import '../board/Board.css';
 
 interface JoinGameProps {
     gameId: string;
@@ -75,7 +76,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave })
     // Show color selection if player hasn't chosen a color
     if (!playerColor) {
         return (
-            <div>
+            <div className='board-container'>
                 <h3>Game ID: {gameId}</h3>
                 <button onClick={() => joinAsColor('white')}>Join as White</button>
                 <button onClick={() => joinAsColor('black')}>Join as Black</button>
@@ -85,7 +86,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave })
 
     // Once color is selected, show the game board and leave button
     return (
-        <div>
+        <div className='board-container'>
             <h3>Playing as {playerColor}</h3>
             <MultiplayerBoard gameId={gameId} playerColor={playerColor} serverIp={serverIp} />
             <button onClick={leaveGame} style={{ marginTop: '10px' }}>Leave Game</button>
