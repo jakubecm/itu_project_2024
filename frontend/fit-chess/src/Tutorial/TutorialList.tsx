@@ -1,27 +1,31 @@
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate, Link } from 'react-router-dom';  
+import './tutorialList.css'; 
 
-function TutorialList() {
-    const navigate = useNavigate();
+const TutorialList: React.FC = () => {
+  const navigate = useNavigate(); 
 
-    return (
-        <div className="tutorial-list">
-            <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
-            <h1 className="title">Tutorial</h1>
-            <div className="menu-container">
-                <div className="menu-item">
-                    <Link to="/tutorial1">
-                        <button className="button">Tutorial 1</button>
-                    </Link>
-                </div>
-                <div className="menu-item">
-                    <Link to="/tutorial/2">
-                        <button className="button">Tutorial 2</button>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="tutorial-list">
+      <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
+      <h1 className="title"> Tutorials</h1>
+      <div className="tutorial-card">
+        <h2>1. Basic moves</h2> 
+        <p>The player learns to move all the different pieces.</p> 
+        <Link to="/tutorial1">
+            <button className="tutorial-button">START</button>
+        </Link>
+      </div>
+      <div className="tutorial-card">
+        <h2>2. tutorial</h2> 
+            <p>Descriptoion</p> 
+            <Link to="/tutorial2">
+                <button className="tutorial-button">START</button>
+            </Link>        
+      </div>
 
-}
+    </div>
+  );
+};
 
 export default TutorialList;
