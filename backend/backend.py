@@ -597,7 +597,7 @@ def legal_moves_multi():
 
         # Find all legal moves for the piece at the given square
     legal_moves = [
-      move.uci() for move in board.legal_moves if move.from_square == square
+      chess.square_name(move.to_square) for move in board.legal_moves if move.from_square == square
     ]
     print("Legal Moves:", legal_moves)  # Log the legal moves found
 

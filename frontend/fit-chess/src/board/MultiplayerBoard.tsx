@@ -35,35 +35,30 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
     const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece");
 
-    const fetchGameState = async () => {
-        if (showPromotionOptions) return;
+    // Fetch game state and check for checkmate/stalemate
+    const fetchGameState = useCallback(async () => {
         try {
             const response = await fetch(`http://${serverIp}:5000/multiplayer/game_state?game_id=${gameId}`);
             const data = await response.json();
-
             setGameState(data);
 
             if (data.is_checkmate || data.is_stalemate) {
                 setHasGameEnded(true);
             }
+
         } catch (e) {
             console.error('Failed to fetch game state:', e);
         }
-    };
+    }, [serverIp, gameId]);
 
-    const handleMove = async (fromSquare: string, toSquare: string, piece: string) => {
-        if (showPromotionOptions) return;
+    // Fetch game state every second
+    useEffect(() => {
+        fetchGameState(); // Initial load
+        const intervalId = setInterval(fetchGameState, 1000);
+        return () => clearInterval(intervalId);
+    }, [fetchGameState]);
 
-        const isPromotion = (piece === 'P' && toSquare[1] === '8') || (piece === 'p' && toSquare[1] === '1');
-        if (isPromotion) {
-            simulateMove(`${fromSquare}${toSquare}`);
-            setPromotionMove({ fromSquare, toSquare });
-            setShowPromotionOptions(true);
-        } else {
-            await submitMove(fromSquare, toSquare);
-        }
-    };
-
+    // Simulate a move on the board
     const simulateMove = async (move: string) => {
         try {
             const response = await fetch(`http://${serverIp}:5000/simulate_move`, {
@@ -87,32 +82,67 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
         }
     }
 
-    const submitMove = async (fromSquare: string, toSquare: string) => {
-        if (gameState?.turn !== playerColor || gameState?.is_checkmate) return;
-
+    const submitMove = async (fromSquare: string, toSquare: string, currentGameState: GameState | null) => {
+        console.log('Inside submitMove, current gameState:', currentGameState);
+        if (!currentGameState || currentGameState.turn !== playerColor || currentGameState.is_checkmate) return;
+    
         try {
-            const move = `${fromSquare}${toSquare}`;
+            const move = fromSquare === toSquare ? '0000' : `${fromSquare}${toSquare}`;
+    
+            if (move === '0000') {
+                setSelectedPiece(null); // Reset selected piece
+                setLegalMoves([]); // Reset legal moves
+                return;
+            }
+    
             const response = await fetch(`http://${serverIp}:5000/multiplayer/move`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ game_id: gameId, move }),
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                setGameState(data);
-                setSelectedPiece(null);
-                setLegalMoves([]);
-                setShowPromotionOptions(false);
-                setPromotionMove(null);
+            
+            const data = await response.json();
+            console.log('Data after submitMove:', data);
+    
+            if (data.error) {
+                console.error(data.error);
+                setSelectedPiece(null); // Reset selected piece
+                setLegalMoves([]); // Reset legal moves
+                setMoveMode('selectingPiece');
+                setSelectedSquare(null);
+                return;
             }
+    
+            setGameState(data);
+            setSelectedPiece(null); // Reset selected piece
+            setLegalMoves([]); // Reset legal moves
+            setSelectedSquare(null);
         } catch (e) {
-            console.error('Failed to make a move:', e);
+            console.error('Failed to make a move: ', e);
         }
     };
+    
+    // Handle move logic
+    const handleMove = useCallback(async (fromSquare: string, toSquare: string, piece: string) => {
+        if (showPromotionOptions) return; // Prevent moves while promotion options are shown
+    
+        const isPromotion = (piece === 'P' && toSquare[1] === '8') || (piece === 'p' && toSquare[1] === '1');
+        
+        if (isPromotion) {
+            simulateMove(`${fromSquare}${toSquare}`);
+            setPromotionMove({ fromSquare, toSquare });
+            setShowPromotionOptions(true);
+
+        } else {
+            console.log('Game state before submit:', gameState);
+            await submitMove(fromSquare, toSquare, gameState);  // Pass the latest `gameState`
+        }
+    }, [showPromotionOptions, gameState]);
 
     const handlePieceSelection = async (position: string) => {
-        if (gameState?.turn !== playerColor || gameState?.is_checkmate) return;
+        if (gameState?.turn !== playerColor || gameState?.is_checkmate) return; // Prevent piece selection if it's not the player's turn
 
         setSelectedPiece(position);
 
@@ -123,22 +153,27 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                 body: JSON.stringify({ game_id: gameId, position }),
             });
             const data = await response.json();
+
             if (data.legal_moves) {
-                setLegalMoves(data.legal_moves.map((move: string) => move.slice(2)));
+                setLegalMoves(data.legal_moves);
             }
+
         } catch (e) {
             console.error('Failed to fetch legal moves:', e);
         }
     };
 
+    // Handle promotion selection
     const handlePromotionSelect = async (piece: string) => {
         if (promotionMove) {
-            await submitMove(promotionMove.fromSquare, promotionMove.toSquare + piece);
+            await submitMove(promotionMove.fromSquare, promotionMove.toSquare + piece, gameState); // Add the selected piece to the move
             setShowPromotionOptions(false);
             setPromotionMove(null);
         }
     };
 
+    // function that launches when a square is navigated to with keyboard
+    // it updates the selected square
     const navigateBoard = useCallback((direction: string) => {
         let row = selectedSquare ? parseInt(selectedSquare[1], 10) : 1;
         let col = selectedSquare ? selectedSquare[0].charCodeAt(0) : 'a'.charCodeAt(0);
@@ -151,20 +186,39 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
         setSelectedSquare(String.fromCharCode(col) + row);
     }, [selectedSquare]);
 
+    // function for selecting a square with keyboard
+    // based on mode it either selects a piece or a target square for a move
     const selectSquare = useCallback(async () => {
         if (!selectedSquare) return;
-
+        
         if (moveMode === "selectingPiece") {
-            await handlePieceSelection(selectedSquare);
-            setMoveMode("selectingTarget");
-        } else if (moveMode === "selectingTarget" && selectedPiece) {
-            await handleMove(selectedPiece, selectedSquare, selectedPiece);
-            setSelectedPiece(null);
-            setLegalMoves([]);
-            setMoveMode("selectingPiece");
-        }
-    }, [selectedSquare, moveMode, selectedPiece, handleMove, handlePieceSelection]);
+            // First selection mode: fetch legal moves for the selected piece
+            const response = await fetch(`http://${serverIp}:5000/multiplayer/legal_moves_multi`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game_id: gameId, position: selectedSquare }),
+            });
+            const data = await response.json();
 
+            if (data.legal_moves.length > 0) {
+                setSelectedPiece(selectedSquare); // Set selected piece if it has legal moves
+                setLegalMoves(data.legal_moves);
+                setMoveMode("selectingTarget"); // Switch to target selection mode
+            } else {
+                console.log('No legal moves for selected square');
+            }
+
+        } else if (moveMode === "selectingTarget") {
+            // Second selection mode: submit the move
+            if (selectedPiece && selectedSquare) {
+                await handleMove(selectedPiece, selectedSquare, selectedPiece);
+                setSelectedPiece(null); // Reset selection
+                setLegalMoves([]); // Clear legal moves
+                setMoveMode("selectingPiece"); // Switch back to piece selection mode
+            }
+        }
+    }, [selectedSquare, moveMode, selectedPiece, handleMove]);
+    
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (showPromotionOptions) return;
@@ -187,21 +241,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedSquare, showPromotionOptions, navigateBoard, selectSquare]);
-
-    const handleSquareClick = useCallback(
-        (position: string) => {
-            if (moveMode === 'selectingPiece') {
-                handlePieceSelection(position);
-                setMoveMode('selectingTarget');
-            } else if (moveMode === 'selectingTarget' && selectedPiece) {
-                handleMove(selectedPiece, position, selectedPiece);
-                setSelectedPiece(null);
-                setLegalMoves([]);
-                setMoveMode('selectingPiece');
-            }
-        },
-        [selectedPiece, moveMode]
-    );
 
     const renderSquares = () => {
         if (!gameState || !gameState.fen) return null;
@@ -229,7 +268,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                             highlighted={highlighted}
                             selected={isSelected}
                             handleMove={handleMove}
-                            onClick={() => handleSquareClick(squarePos)}
+                            //onClick={() => handleSquareClick(squarePos)}
                         />
                     );
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
@@ -247,7 +286,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                         selected={isSelected}
                         inCheck={inCheck}
                         handleMove={handleMove}
-                        onClick={() => handleSquareClick(squarePos)}
+                        //onClick={() => handleSquareClick(squarePos)}
                     >
                         <Piece type={c} position={squarePos} handlePick={handlePieceSelection} />
                     </Square>
@@ -258,15 +297,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
 
         return squares;
     };
-
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            if (!showPromotionOptions) {
-                fetchGameState();
-            }
-        }, 1000);
-        return () => clearInterval(intervalId);
-    }, [gameId, showPromotionOptions]);
 
     return (
         <div className='board-container'>
