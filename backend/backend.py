@@ -58,7 +58,7 @@ def new_tutorial():
     """
     global board
     board = chess.Board()  # Reset the board to the starting position
-    board.set_fen("8/8/8/8/8/8/8/R7 w KQkq - 0 1")  
+    board.set_fen("8/8/8/8/8/8/8/R6R w KQkq - 0 1")  
     return jsonify({
         'message': 'New game started',
         'fen': board.fen(),  # Return the FEN notation for the starting position

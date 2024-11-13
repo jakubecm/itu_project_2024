@@ -18,7 +18,7 @@ const TutorialList: React.FC = () => {
       </div>
       <div className="tutorial-card">
         <h2>2. tutorial</h2> 
-            <p>Descriptoion</p> 
+            <p>Description</p> 
             <Link to="/tutorial2">
                 <button className="tutorial-button">START</button>
             </Link>        

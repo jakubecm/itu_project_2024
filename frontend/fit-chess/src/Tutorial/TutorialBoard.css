@@ -1,12 +1,31 @@
-.board-container {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    height: 100vh; 
+.tutorial1 {
+    font-family: 'Lexend Tera', sans-serif;
+    font-size: 14px;
 }
 
-.piece-row {
+.tutorial1 .board-wrapper {
     display: flex;
-    justify-content: center;
-    margin-bottom: 20px; /* Odstup mezi řádkem figurek a šachovnicí */
+    flex-direction: column; 
+    align-items: center;
+}
+
+.tutorial1 .board-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.tutorial1 .description-container {
+    background-color: rgb(222, 222, 222);
+    width: 206px;
+    height: 620px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    justify-content: flex-start;
+    resize: both;
+    text-align: justify;
+    margin-left: 15px;
+    color: black;
+    padding: 10px;
 }

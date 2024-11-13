@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Square } from '../board/Square';
+import { Square } from '../board/square';
 import { Piece } from '../board/piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -100,7 +100,7 @@ export const TutorialBoard: React.FC<{}> = () => {
             if (data.error) {
                 console.error("Invalid FEN format");
             } else {
-                setGameState(data);  // Aktualizace stavu hry s novým FEN
+                setGameState(data);
             }
         } catch (error) {
             console.error("Failed to set FEN:", error);
@@ -152,21 +152,26 @@ export const TutorialBoard: React.FC<{}> = () => {
         return squares;
     };
     
-
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className='board-container'>
-                <div className="piece-row">
-                    {/* Figury s nastavením FEN při kliknutí */}
-                    <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R7 w KQkq - 0 1')} />
-        <Piece type="N" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/N7 w KQkq - 0 1')} />
-        <Piece type="B" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/B7 w KQkq - 0 1')} />
-        <Piece type="Q" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/Q7 w KQkq - 0 1')} />
-        <Piece type="K" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/K7 w KQkq - 0 1')} />
-        <Piece type="P" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/P7 w KQkq - 0 1')} />
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})` }}>
-                    {renderSquares()}
+            <div className='tutorial1'>
+                <div className="board-wrapper">
+                    <div className="board-container">
+                        <div className="piece-row">
+                            <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R6R w KQkq - 0 1')} />
+                            <Piece type="N" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/1N4N1 w KQkq - 0 1')} />
+                            <Piece type="B" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/2B2B2 w KQkq - 0 1')} />
+                            <Piece type="Q" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/3Q4 w KQkq - 0 1')} />
+                            <Piece type="K" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/4K3 w KQkq - 0 1')} />
+                            <Piece type="P" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/PPPPPPPP/8 w KQkq - 0 1')} />
+                        </div>                        
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})` }}>
+                            {renderSquares()}
+                        </div>                        
+                        <div className="description-container">
+                            <p>On the left side, choose the figure you want to learn to move and try out their movements.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </DndProvider>
