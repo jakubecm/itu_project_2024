@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 import chess
 import chess.engine
+from draughts import Board, Move, WHITE, BLACK
 from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
@@ -641,6 +642,239 @@ def leave_game():
         return jsonify({'message': 'Game deleted due to both players leaving'}), 200
 
     return jsonify({'message': f'{player_color} has left the game', 'game_id': game_id})
+
+# Checkers API Endpoints
+
+# Initialize a global checkers board object
+checkersBoard = Board(variant="frysk", fen="startpos")
+
+
+@app.route('/checkers/checkers_new_game', methods=['POST'])
+def checkers_new_game():
+    """
+    Start a new checkers game.
+    ---
+    responses:
+      200:
+        description: A new game is started
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: New game started
+            fen:
+              type: string
+              example: "W:W18,21,22,23,24,25,26,27,28:B12,13,14,15,16,17,19,20,29"
+            turn:
+              type: string
+              example: white
+    """
+    global checkersBoard
+    data = request.get_json()
+    variant = data.get('variant', 'standard')  # Default to 'standard' if not provided
+
+    if variant == 'frysk':
+        checkersBoard = Board(variant="frysk", fen="startpos")
+    else:
+        checkersBoard = Board()
+
+    return jsonify({
+        'message': f'New {variant} game started',
+        'fen': checkersBoard.fen,
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
+    })
+
+
+@app.route('/checkers/checkers_move', methods=['POST'])
+def checkers_make_move():
+    """
+    Make a move in the checkers game.
+    ---
+    parameters:
+      - name: move
+        in: body
+        type: string
+        required: true
+        description: The move in PDN format (e.g., "34-30")
+        schema:
+          type: object
+          properties:
+            move:
+              type: string
+              example: "34-30"
+    responses:
+      200:
+        description: Move applied successfully
+        schema:
+          type: object
+          properties:
+            fen:
+              type: string
+            is_over:
+              type: boolean
+            turn:
+              type: string
+      400:
+        description: Invalid move
+    """
+    global checkersBoard
+    move_pdn = request.json.get('move')  # Get the PDN string ("29x27")
+    print("Attempting move:", move_pdn)
+
+    # Get legal moves as PDN strings
+    legal_moves_pdn = [move.pdn_move for move in checkersBoard.legal_moves()]
+    print("Legal moves (PDN):", legal_moves_pdn)
+
+    # Check if the move is in the legal moves
+    if move_pdn not in legal_moves_pdn:
+        return jsonify({'error': 'Illegal move'}), 400
+
+    # Find and apply the matching legal move
+    for legal_move in checkersBoard.legal_moves():
+        if legal_move.pdn_move == move_pdn:
+            checkersBoard.push(legal_move)  # Apply the move
+            break
+
+    # Check if the current piece can make another capture
+    next_legal_moves = [move.pdn_move for move in checkersBoard.legal_moves()]
+    continue_capture = any('x' in move for move in next_legal_moves)
+
+    return jsonify({
+        'fen': checkersBoard.fen,
+        'is_over': checkersBoard.is_over(),
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black',
+        'is_capture': 'x' in move_pdn,
+        'continue_capture': continue_capture,
+        'legal_moves': next_legal_moves if continue_capture else []
+    })
+
+
+@app.route('/checkers/checkers_state', methods=['GET'])
+def checkers_get_game_state():
+    """
+    Get the current game state.
+    ---
+    responses:
+      200:
+        description: The current game state
+        schema:
+          type: object
+          properties:
+            fen:
+              type: string
+            is_over:
+              type: boolean
+            turn:
+              type: string
+    """
+    global checkersBoard
+    return jsonify({
+        'fen': checkersBoard.fen,
+        'is_over': checkersBoard.is_over(),
+        'turn': 'red' if checkersBoard.turn == WHITE else 'black'
+    })
+
+
+@app.route('/checkers/checkers_legal_moves', methods=['POST'])
+def checkers_get_legal_moves():
+    """
+    Get all legal moves for the current player.
+    ---
+    responses:
+      200:
+        description: List of all legal moves
+        schema:
+          type: object
+          properties:
+            legal_moves:
+              type: array
+              items:
+                type: string
+    """
+    global checkersBoard
+    try:
+        # Parse the request body
+        data = request.json
+        position = data.get("position")
+
+        if position is None:
+            return jsonify({'error': 'Position is required'}), 400
+
+        legal_moves = []
+        for move in checkersBoard.legal_moves():
+            # Extract starting square from move.pdn_move
+            pdn_move = move.pdn_move  # Example: "34-28" or "34x28"
+            start_square = int(pdn_move.split('x')[0] if 'x' in pdn_move else pdn_move.split('-')[0])
+
+            # If the starting square matches the requested position, add the move
+            if start_square == position:
+                legal_moves.append(pdn_move)
+
+        if not legal_moves:
+            return jsonify({'legal_moves': []}), 200  # Return empty list if no moves
+
+        return jsonify({'legal_moves': legal_moves})
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': str(e)}), 500
+    
+def generate_square_num_to_position_map():
+    """
+    Generates a mapping of square numbers (1-50) to board positions
+    """
+    mapping = {}
+    square_num = 1
+    files_even_rank = ['b', 'd', 'f', 'h', 'j']  # Dark squares in even ranks
+    files_odd_rank = ['a', 'c', 'e', 'g', 'i']   # Dark squares in odd ranks
+
+    for rank in range(10, 0, -1):  # Rows 10 to 1
+        is_even = rank % 2 == 0  # Check if the rank is even
+        files = files_even_rank if is_even else files_odd_rank
+
+        for file in files:
+            mapping[square_num] = f"{file}{rank}"  # Map square number to position
+            square_num += 1
+
+    return mapping
+    
+@app.route('/checkers/playable_pieces', methods=['GET'])
+def checkers_get_playable_pieces():
+    """
+    Get all pieces that can make a move in the current turn.
+    ---
+    responses:
+      200:
+        description: List of all playable pieces
+        schema:
+          type: object
+          properties:
+            playable_pieces:
+              type: array
+              items:
+                type: string
+    """
+    global checkersBoard
+    try:
+        # A set to hold unique starting positions of pieces with legal moves
+        playable_pieces = set()
+
+        # Loop through all legal moves and collect their starting squares
+        for move in checkersBoard.legal_moves():
+            pdn_move = move.pdn_move  # Example: "34-28" or "34x28"
+            start_square = int(pdn_move.split('x')[0] if 'x' in pdn_move else pdn_move.split('-')[0])
+            playable_pieces.add(start_square)
+
+        # Convert square numbers to positions
+        square_num_to_position_map = generate_square_num_to_position_map()
+        playable_positions = [square_num_to_position_map[square] for square in playable_pieces]
+
+        return jsonify({'playable_pieces': playable_positions}), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
