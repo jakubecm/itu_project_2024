@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
 Modal.setAppElement('#root'); // Suppresses modal-related console warnings
 import './Settings.css';
 
@@ -48,9 +50,9 @@ const Settings = ({ onThemeChange }: SettingsProps) => {
     };
 
     return (
-        <div>
+        <div style={{ marginLeft: '44%' }}>
             <button onClick={handleOpenModal} className="settings-button">
-                <i className="fa fa-cog"></i> Settings
+                <FontAwesomeIcon icon={faCog} size="3x" />
             </button>
             <Modal
                 isOpen={modalIsOpen}

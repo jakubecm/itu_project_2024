@@ -15,6 +15,8 @@ swagger = Swagger(app)
 
 # Create a global chess board object to represent the current game
 board = chess.Board()
+# A global list to store the move history to be able to undo moves
+move_history = []
 
 STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +39,9 @@ def new_game():
               type: string
     """
     global board
+    global move_history
     board = chess.Board()  # Reset the board to the starting position
+    move_history = [] # Clear the move history
     return jsonify({
         'message': 'New game started',
         'fen': board.fen(),  # Return the FEN notation for the starting position
@@ -108,6 +112,7 @@ def make_move():
     try:
         move = chess.Move.from_uci(move_uci)  # Parse the UCI move
         if move in board.legal_moves:  # Validate if it's a legal move
+            move_history.append(board.fen()) # Save the current board state to the move history
             board.push(move)  # Apply the move to the board
         else:
             return jsonify({'error': 'Illegal move'}), 400
@@ -128,6 +133,31 @@ def make_move():
         'is_check': board.is_check(),
         'check_square': check_square
     })
+
+@app.route('/undo_move', methods=['POST'])
+def undo_move():
+    global board, move_history
+    if move_history:
+        last_fen = move_history.pop()  # Remove the last state from the history
+        board.set_fen(last_fen)  # Restore the board to the last state
+
+                # Determine check_square position in case of checkmate
+        check_square = None
+        if board.is_checkmate():
+          check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
+          print(f"Checkmate detected. Check square: {check_square}")
+          
+        return jsonify({
+            'message': 'Move undone',
+            'fen': last_fen,
+            'is_checkmate': board.is_checkmate(),
+            'is_stalemate': board.is_stalemate(),
+            'turn': 'white' if board.turn == chess.WHITE else 'black',
+            'is_check': board.is_check(),
+            'check_square': check_square
+        })
+    return jsonify({'error': 'No moves to undo'}), 400
+
 
 @app.route('/move_white', methods=['POST'])
 def make_move_white():

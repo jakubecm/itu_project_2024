@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
 import { useParams } from 'react-router-dom';
 import Settings from './Settings';
+import Sidebar from './Sidebar';
 import './Board.css';
 
 export const SQUARE_SIZE = '80px';
@@ -33,6 +34,7 @@ export const Board: React.FC<unknown> = () => {
     const [selectedSquare, setSelectedSquare] = useState<string | null>(null); // Track the selected square for keyboard navigation
     const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece"); // Track the current move mode for keyboard navigation
     const [theme, setTheme] = useState<string>('regular');
+    const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
     const handleThemeChange = (newTheme: string) => {
         setTheme(newTheme);
@@ -202,6 +204,7 @@ export const Board: React.FC<unknown> = () => {
             }
 
             setGameState(data);
+            setMoveHistory(moveHistory => [...moveHistory, `From: ${fromSquare} To: ${toSquare}`]);
             setSelectedPiece(null); // Reset selected piece
             setLegalMoves([]); // Reset legal moves
 
@@ -237,6 +240,43 @@ export const Board: React.FC<unknown> = () => {
             console.error('Failed to make a move: ', e);
         }
     }
+
+    const revertLastMove = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/undo_move', { method: 'POST' });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to revert the move');
+            setGameState({
+                fen: data.fen,
+                turn: data.turn,
+                is_checkmate: data.is_checkmate,
+                is_stalemate: data.is_stalemate,
+                is_check: data.is_check,
+                check_square: data.check_square
+            });
+
+            setMoveHistory(moveHistory.slice(0, -1)); // Remove the last move from the history
+        } catch (e) {
+            console.error('Error reverting move:', e);
+        }
+    };
+    
+    const showHint = async () => {
+        try {
+            if (!gameState) return;
+            const response = await fetch('http://127.0.0.1:5000/hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fen: gameState.fen })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Failed to get a hint');
+            console.log(`Hint: Move ${data.hint}`);
+        } catch (e) {
+            console.error('Error getting hint:', e);
+        }
+    };
+    
 
     // function that launches when a piece is picked up
     // shows legal moves for the selected piece
@@ -382,22 +422,27 @@ export const Board: React.FC<unknown> = () => {
     };
 
     return (
+        <>
         <div className='board-container'>
-        <DndProvider backend={HTML5Backend}>
             turn: {gameState.turn}
-            <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
-                {renderSquares()}
-                {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare} theme={theme}/>}
-                {showGameOverModal && (
-                    <GameOverModal
-                        message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
-                        onClose={() => setShowGameOverModal(false)}
-                        onNewGame={startNewGame}
-                    />
-                )}
+            <div className='board-sidebar-container'>
+                <DndProvider backend={HTML5Backend}>
+                    <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
+                        {renderSquares()}
+                        {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare} theme={theme}/>}
+                        {showGameOverModal && (
+                            <GameOverModal
+                                message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
+                                onClose={() => setShowGameOverModal(false)}
+                                onNewGame={startNewGame}
+                            />
+                        )}
+                    </div>
+                </DndProvider>
+                <Sidebar moveHistory={moveHistory} onRevert={revertLastMove} onHint={showHint} />
             </div>
-        </DndProvider>
-        <Settings onThemeChange={handleThemeChange} />
+            <Settings onThemeChange={handleThemeChange} />
         </div>
+        </>
     );
 }
