@@ -5,6 +5,7 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
 import { useParams } from 'react-router-dom';
+import Settings from './Settings';
 import './Board.css';
 
 export const SQUARE_SIZE = '80px';
@@ -31,6 +32,11 @@ export const Board: React.FC<unknown> = () => {
     const [showGameOverModal, setShowGameOverModal] = useState(false);
     const [selectedSquare, setSelectedSquare] = useState<string | null>(null); // Track the selected square for keyboard navigation
     const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece"); // Track the current move mode for keyboard navigation
+    const [theme, setTheme] = useState<string>('regular');
+
+    const handleThemeChange = (newTheme: string) => {
+        setTheme(newTheme);
+    }
     
     const { difficulty } = useParams<Record<string, string>>();
 
@@ -365,7 +371,7 @@ export const Board: React.FC<unknown> = () => {
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
                     <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck} onClick={handleSquareClick}>
-                        <Piece type={c} position={pos} handlePick={handlePieceSelection} />
+                        <Piece type={c} position={pos} handlePick={handlePieceSelection} theme={theme}/>
                     </Square>
                 );
                 col = String.fromCharCode(col.charCodeAt(0) + 1);
@@ -381,7 +387,7 @@ export const Board: React.FC<unknown> = () => {
             turn: {gameState.turn}
             <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
                 {renderSquares()}
-                {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare}/>}
+                {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare} theme={theme}/>}
                 {showGameOverModal && (
                     <GameOverModal
                         message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
@@ -391,6 +397,7 @@ export const Board: React.FC<unknown> = () => {
                 )}
             </div>
         </DndProvider>
+        <Settings onThemeChange={handleThemeChange} />
         </div>
     );
 }
