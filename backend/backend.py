@@ -308,6 +308,39 @@ def ai_move():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/hint', methods=['POST'])
+def get_hint():
+    """
+    Provide a hint for the best move from the current position.
+    ---
+    responses:
+      200:
+        description: Suggests the best move based on the current board state.
+        schema:
+          type: object
+          properties:
+            move:
+              type: string
+              example: "e2e4"
+            message:
+              type: string
+              example: "Best move suggestion."
+      500:
+        description: Error processing the hint request.
+    """
+    global board
+
+    try:
+        with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
+            result = engine.play(board, chess.engine.Limit(time=0.1))  # or use depth
+            best_move = result.move.uci()
+            return jsonify({
+                'move': best_move,
+                'message': 'Best move suggestion.'
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/legal_moves', methods=['POST'])
 def legal_moves():
     """

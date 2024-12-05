@@ -35,11 +35,12 @@ export const Board: React.FC<unknown> = () => {
     const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece"); // Track the current move mode for keyboard navigation
     const [theme, setTheme] = useState<string>('regular');
     const [moveHistory, setMoveHistory] = useState<string[]>([]);
+    const [hint, setHint] = useState<string | null>(null);
 
     const handleThemeChange = (newTheme: string) => {
         setTheme(newTheme);
-    }
-    
+    };
+
     const { difficulty } = useParams<Record<string, string>>();
 
     const difficultyLevel = (difficulty as Difficulty) || 'none';
@@ -208,6 +209,7 @@ export const Board: React.FC<unknown> = () => {
             setMoveHistory(moveHistory => [...moveHistory, `Player: ${fromSquare} to ${toSquare}`]);
             setSelectedPiece(null); // Reset selected piece
             setLegalMoves([]); // Reset legal moves
+            setHint(null);
 
             if (difficultyLevel !== 'none') {
                 callAIMove();
@@ -270,8 +272,8 @@ export const Board: React.FC<unknown> = () => {
     };
     
     const showHint = async () => {
+        if (!gameState) return;
         try {
-            if (!gameState) return;
             const response = await fetch('http://127.0.0.1:5000/hint', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -279,7 +281,7 @@ export const Board: React.FC<unknown> = () => {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Failed to get a hint');
-            console.log(`Hint: Move ${data.hint}`);
+            setHint(data.move);
         } catch (e) {
             console.error('Error getting hint:', e);
         }
@@ -393,6 +395,9 @@ export const Board: React.FC<unknown> = () => {
         const squares: JSX.Element[] = [];
         let row = '8'; // Start at row 8
         let col = 'a'; // Start at column a
+        let hintFrom = hint?.slice(0, 2);
+        let hintTo = hint?.slice(2, 4);
+
 
         pos.split('').forEach((c) => {
             if (c === '/') {
@@ -407,7 +412,9 @@ export const Board: React.FC<unknown> = () => {
                 for (let i = 0; i < parseInt(c); i++) {
                     const pos = col + row;
                     const selected = selectedSquare === pos;  // highlight selected square
-                    const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // highlight legal moves
+                    const isHintFrom = pos === hintFrom;
+                    const isHintTo = pos === hintTo;
+                    const highlighted = selectedPiece === pos || legalMoves.includes(pos) || isHintFrom || isHintTo;  // highlight legal moves
                     squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} onClick={handleSquareClick} />);
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
                 }
@@ -415,7 +422,9 @@ export const Board: React.FC<unknown> = () => {
                 // letters represent pieces
                 const pos = col + row;
                 const selected = selectedSquare === pos;  // highlight selected square
-                const highlighted = selectedPiece === pos || legalMoves.includes(pos);  // Same check here for highlighting
+                const isHintFrom = pos === hintFrom;
+                const isHintTo = pos === hintTo;
+                const highlighted = selectedPiece === pos || legalMoves.includes(pos) || isHintFrom || isHintTo;  // Same check here for highlighting
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
                 squares.push(
                     <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck} onClick={handleSquareClick}>
