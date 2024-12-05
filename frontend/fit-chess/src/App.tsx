@@ -6,6 +6,8 @@ import { Board } from './board/board';
 import AIGameMenu from './Menu/AIGameMenu';
 import TutorialList from './Tutorial/TutorialList';
 import { TutorialBoard } from './Tutorial/Tutorial1';
+import { CheckersBoard } from './Checkers/CheckersBoard';
+import CheckersGameMenu from './Menu/CheckersGameMenu';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/board" element={<Board />} />
           <Route path="/tutorial" element={<TutorialList />} />
           <Route path="/tutorial1" element={< TutorialBoard />} />
+          <Route path="/checkers/new-game" element={< CheckersGameMenu />} />
+          <Route path="/checkers" element={<CheckersBoard />} />
         </Routes>
       </div>
     </Router>
