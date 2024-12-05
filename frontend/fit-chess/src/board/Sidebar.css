@@ -12,6 +12,7 @@
 
 .move-history {
     overflow-y: auto; /* Enables scrolling if many moves */
+    font-size: 14px; /* Adjust text size as needed */
 }
 
 .controls {
