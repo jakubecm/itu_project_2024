@@ -32,7 +32,7 @@ const Settings = ({ onThemeChange }: SettingsProps) => {
             }
         };
         fetchThemes();
-    }, [onThemeChange]);
+    }, []);
 
     const handleOpenModal = () => {
         setModalIsOpen(true);

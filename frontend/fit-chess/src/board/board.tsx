@@ -70,6 +70,7 @@ export const Board: React.FC<unknown> = () => {
     
           // Update game state with the response from the server
           setGameState(data);
+          setMoveHistory(moveHistory => [...moveHistory, `AI: ${data.from} to ${data.to}`]);
         } catch (error) {
           console.error('Error fetching AI move:', error);
         }
@@ -204,7 +205,7 @@ export const Board: React.FC<unknown> = () => {
             }
 
             setGameState(data);
-            setMoveHistory(moveHistory => [...moveHistory, `From: ${fromSquare} To: ${toSquare}`]);
+            setMoveHistory(moveHistory => [...moveHistory, `Player: ${fromSquare} to ${toSquare}`]);
             setSelectedPiece(null); // Reset selected piece
             setLegalMoves([]); // Reset legal moves
 
@@ -255,7 +256,14 @@ export const Board: React.FC<unknown> = () => {
                 check_square: data.check_square
             });
 
-            setMoveHistory(moveHistory.slice(0, -1)); // Remove the last move from the history
+            if(difficultyLevel !== 'none')
+            {
+                setMoveHistory(moveHistory.slice(0, -2)); // Remove the last two moves from the history
+            }
+            else{
+                setMoveHistory(moveHistory.slice(0, -1)); // Remove the last move from the history
+            }
+
         } catch (e) {
             console.error('Error reverting move:', e);
         }

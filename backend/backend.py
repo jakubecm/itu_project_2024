@@ -146,7 +146,7 @@ def undo_move():
         if board.is_checkmate():
           check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
           print(f"Checkmate detected. Check square: {check_square}")
-          
+
         return jsonify({
             'message': 'Move undone',
             'fen': last_fen,
@@ -282,7 +282,7 @@ def ai_move():
     """
     AI move endpoint which takes skill level and depth as parameters.
     """
-    global board
+    global board, move_history
     skill_level = request.json.get("skill_level", 5)  # Default to skill level 5
     depth = request.json.get("depth", 2)              # Default to depth 2
 
@@ -301,7 +301,9 @@ def ai_move():
                 'ai_move': ai_move.move.uci(),
                 'is_checkmate': board.is_checkmate(),
                 'is_stalemate': board.is_stalemate(),
-                'turn': 'white' if board.turn == chess.WHITE else 'black'
+                'turn': 'white' if board.turn == chess.WHITE else 'black',
+                'from': chess.square_name(ai_move.move.from_square),
+                'to': chess.square_name(ai_move.move.to_square),
             })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
