@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
+import os
 import chess
 import chess.engine
 from draughts import Board, Move, WHITE, BLACK
@@ -16,6 +17,8 @@ swagger = Swagger(app)
 board = chess.Board()
 
 STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+THEMES_DIRECTORY = os.path.join(BASE_DIR, 'themes')
 
 @app.route('/new_game', methods=['GET'])
 def new_game():
@@ -643,6 +646,56 @@ def leave_game():
 
     return jsonify({'message': f'{player_color} has left the game', 'game_id': game_id})
 
+@app.route('/themes', methods=['GET'])
+def list_themes():
+  """
+  List all available themes
+  ---
+  responses:
+    200:
+      description: A list of available themes
+      schema:
+        type: object
+        properties:
+          themes:
+            type: array
+            items:
+              type: string
+              description: The name of the theme
+  """
+  try:
+    themes = [theme for theme in os.listdir(THEMES_DIRECTORY) if os.path.isdir(os.path.join(THEMES_DIRECTORY, theme))]
+    return jsonify({'themes': themes}), 200
+  except Exception as e:
+    return jsonify({'error': str(e)}), 500
+
+@app.route('/themes/<theme>/<filename>', methods=['GET'])
+def get_theme_file(theme, filename):
+    """
+    Serve static files from the theme folders.
+
+    ---
+    parameters:
+      - name: theme
+        in: path
+        type: string
+        required: true
+        description: The theme name
+      - name: filename
+        in: path
+        type: string
+        required: true
+        description: The file name to serve
+    responses:
+      200:
+        description: The requested file
+      404:
+        description: The file was not found
+
+    """
+    theme_path = os.path.join(THEMES_DIRECTORY, theme)
+    return send_from_directory(theme_path, filename)
+  
 # Checkers API Endpoints
 
 # Initialize a global checkers board object
