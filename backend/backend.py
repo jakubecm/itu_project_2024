@@ -8,6 +8,7 @@ from flask import Flask
 from flask_cors import CORS
 import uuid
 import socket
+from collections import Counter
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains to make requests
@@ -45,7 +46,8 @@ def new_game():
     return jsonify({
         'message': 'New game started',
         'fen': board.fen(),  # Return the FEN notation for the starting position
-        'turn': 'white'
+        'turn': 'white',
+        'material_balance': material_balance(board)
     })
 
 @app.route('/new_tutorial', methods=['GET'])
@@ -131,7 +133,8 @@ def make_move():
         'is_stalemate': board.is_stalemate(),
         'turn': 'white' if board.turn == chess.WHITE else 'black',
         'is_check': board.is_check(),
-        'check_square': check_square
+        'check_square': check_square,
+        'material_balance': material_balance(board)
     })
 
 @app.route('/undo_move', methods=['POST'])
@@ -181,7 +184,8 @@ def make_move_white():
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
         'turn': 'white',
-        'is_check': board.is_check()
+        'is_check': board.is_check(),
+        'material_balance': material_balance(board)
     })
 
 @app.route('/set_fen', methods=['POST'])
@@ -201,7 +205,8 @@ def set_fen():
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
         'turn': 'white' if board.turn == chess.WHITE else 'black',
-        'is_check': board.is_check()
+        'is_check': board.is_check(),
+        'material_balance': material_balance(board)
     })
 
 @app.route('/simulate_move', methods=['POST'])
@@ -274,7 +279,8 @@ def get_game_state():
         'fen': board.fen(),
         'is_checkmate': board.is_checkmate(),
         'is_stalemate': board.is_stalemate(),
-        'turn': 'white' if board.turn == chess.WHITE else 'black'
+        'turn': 'white' if board.turn == chess.WHITE else 'black',
+        'material_balance': material_balance(board)
     })
 
 @app.route('/ai_move', methods=['POST'])
@@ -304,6 +310,7 @@ def ai_move():
                 'turn': 'white' if board.turn == chess.WHITE else 'black',
                 'from': chess.square_name(ai_move.move.from_square),
                 'to': chess.square_name(ai_move.move.to_square),
+                'material_balance': material_balance(board),
             })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -388,6 +395,89 @@ def legal_moves():
     return jsonify({
         'legal_moves': legal_moves
     })
+
+# source: https://github.com/niklasf/python-chess/discussions/864
+def material_balance(board):
+    white = board.occupied_co[chess.WHITE]
+    black = board.occupied_co[chess.BLACK]
+    return (
+        chess.popcount(white & board.pawns) - chess.popcount(black & board.pawns) +
+        3 * (chess.popcount(white & board.knights) - chess.popcount(black & board.knights)) +
+        3 * (chess.popcount(white & board.bishops) - chess.popcount(black & board.bishops)) +
+        5 * (chess.popcount(white & board.rooks) - chess.popcount(black & board.rooks)) +
+        9 * (chess.popcount(white & board.queens) - chess.popcount(black & board.queens))
+    )
+
+@app.route('/captured_pieces', methods=['GET'])
+def get_captured_pieces():
+    """
+    Get the captured pieces for each player
+    ---
+    responses:
+      200:
+        description: The captured pieces for each player
+        schema:
+          type: object
+          properties:
+            white:
+              type: object
+              properties:
+                p:
+                  type: integer
+                n:
+                  type: integer
+                b:
+                  type: integer
+                r:
+                  type: integer
+                q:
+                  type: integer
+            black:
+              type: object
+              properties:
+                p:
+                  type: integer
+                n:
+                  type: integer
+                b:
+                  type: integer
+                r:
+                  type: integer
+                q:
+                  type: integer
+    """
+    global board
+    starting_pieces = Counter({
+        chess.PAWN: 8,
+        chess.KNIGHT: 2,
+        chess.BISHOP: 2,
+        chess.ROOK: 2,
+        chess.QUEEN: 1,
+        chess.KING: 1
+    })
+
+    # Count remaining pieces on the board, grouped by type
+    remaining_white = Counter(piece.piece_type for piece in board.piece_map().values() if piece.color == chess.WHITE)
+    remaining_black = Counter(piece.piece_type for piece in board.piece_map().values() if piece.color == chess.BLACK)
+
+    # Calculate captured pieces
+    captured_white = starting_pieces - remaining_black
+    captured_black = starting_pieces - remaining_white
+
+    # Format the output as a dictionary
+    def format_captured(captured):
+        return {
+            'p': captured[chess.PAWN],
+            'n': captured[chess.KNIGHT],
+            'b': captured[chess.BISHOP],
+            'r': captured[chess.ROOK],
+            'q': captured[chess.QUEEN]
+        }
+
+    return {
+        'white': format_captured(captured_white),
+        'black': format_captured(captured_black)
+    }
 
 games = {}
 

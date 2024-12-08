@@ -50,7 +50,7 @@ const Settings = ({ onThemeChange }: SettingsProps) => {
     };
 
     return (
-        <div style={{ marginLeft: '44%' }}>
+        <div style={{ position: 'fixed', bottom: '10px', right: '10px' }}>
             <button onClick={handleOpenModal} className="settings-button">
                 <FontAwesomeIcon icon={faCog} size="3x" />
             </button>

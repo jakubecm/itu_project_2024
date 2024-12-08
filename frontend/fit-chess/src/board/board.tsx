@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Square } from './square';
-import { Piece, PromotionOptions } from './piece';
+import { CapturedPieces, CapturedPiecesComponent, Piece, PromotionOptions } from './piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import Settings from './Settings';
 import Sidebar from './Sidebar';
 import './Board.css';
+import { parseLastMove } from './utils';
 
 export const SQUARE_SIZE = '80px';
 document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
@@ -18,7 +19,13 @@ interface GameState {
     is_checkmate: boolean;
     is_stalemate: boolean;
     is_check: boolean;
+    material_balance: number;
     check_square?: string;
+}
+
+interface Players {
+    white: string;
+    black: string;
 }
 
 type Difficulty = 'beginner' | 'intermediate' | 'none';
@@ -36,6 +43,8 @@ export const Board: React.FC<unknown> = () => {
     const [theme, setTheme] = useState<string>('regular');
     const [moveHistory, setMoveHistory] = useState<string[]>([]);
     const [hint, setHint] = useState<string | null>(null);
+    const [capturedPieces, setCapturedPieces] = useState<CapturedPieces | null>(null);
+    const [players, setPlayers] = useState<Players>({ white: '', black: '' });
 
     const handleThemeChange = (newTheme: string) => {
         setTheme(newTheme);
@@ -255,6 +264,7 @@ export const Board: React.FC<unknown> = () => {
                 is_checkmate: data.is_checkmate,
                 is_stalemate: data.is_stalemate,
                 is_check: data.is_check,
+                material_balance: data.material_balance,
                 check_square: data.check_square
             });
 
@@ -363,11 +373,29 @@ export const Board: React.FC<unknown> = () => {
             });
             const data = await response.json();
             setGameState(data);
+            setMoveHistory([]);
+
+            if (difficultyLevel !== 'none') {
+                setPlayers({ white: "Player", black: `AI ${difficulty}` });
+            } else {
+                setPlayers({ white: "Player 1", black: "Player 2" });
+            }
         }
         catch (e) {
             console.error('Failed to start a new game: ', e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const getCapturedPieces = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/captured_pieces');
+            const data = await response.json();
+            setCapturedPieces(data);
+            console.log(data);
+        } catch (e) {
+            console.error('Failed to get captured pieces:', e);
         }
     };
 
@@ -383,6 +411,10 @@ export const Board: React.FC<unknown> = () => {
         }
     }, [gameState]);
 
+    useEffect(() => {
+        getCapturedPieces();
+    }, [gameState?.material_balance]);
+
     // if the game state is not loaded, show a loading message
     // this prevents stuff breaking on the first load,
     // when the game is not fetched from backend yet
@@ -397,6 +429,7 @@ export const Board: React.FC<unknown> = () => {
         let col = 'a'; // Start at column a
         let hintFrom = hint?.slice(0, 2);
         let hintTo = hint?.slice(2, 4);
+        let lastMove = parseLastMove(moveHistory);
 
 
         pos.split('').forEach((c) => {
@@ -415,7 +448,8 @@ export const Board: React.FC<unknown> = () => {
                     const isHintFrom = pos === hintFrom;
                     const isHintTo = pos === hintTo;
                     const highlighted = selectedPiece === pos || legalMoves.includes(pos) || isHintFrom || isHintTo;  // highlight legal moves
-                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} onClick={handleSquareClick} />);
+                    const wasLast = pos === lastMove.fromSquare || pos === lastMove.toSquare;
+                    squares.push(<Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} onClick={handleSquareClick} lastMove={wasLast}/>);
                     col = String.fromCharCode(col.charCodeAt(0) + 1);
                 }
             } else {
@@ -426,8 +460,9 @@ export const Board: React.FC<unknown> = () => {
                 const isHintTo = pos === hintTo;
                 const highlighted = selectedPiece === pos || legalMoves.includes(pos) || isHintFrom || isHintTo;  // Same check here for highlighting
                 const inCheck = gameState.check_square ? pos === gameState.check_square : (((c === 'k' && gameState.turn === 'black') || (c === 'K' && gameState.turn === 'white')) && gameState.is_check);
+                const wasLast = pos === lastMove.fromSquare || pos === lastMove.toSquare;
                 squares.push(
-                    <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck} onClick={handleSquareClick}>
+                    <Square key={pos} position={pos} highlighted={highlighted} selected={selected} handleMove={handleMove} inCheck={inCheck} onClick={handleSquareClick} lastMove={wasLast}>
                         <Piece type={c} position={pos} handlePick={handlePieceSelection} theme={theme}/>
                     </Square>
                 );
@@ -439,27 +474,34 @@ export const Board: React.FC<unknown> = () => {
     };
 
     return (
-        <>
         <div className='board-container'>
-            turn: {gameState.turn}
             <div className='board-sidebar-container'>
-                <DndProvider backend={HTML5Backend}>
-                    <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
-                        {renderSquares()}
-                        {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare} theme={theme}/>}
-                        {showGameOverModal && (
-                            <GameOverModal
-                                message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
-                                onClose={() => setShowGameOverModal(false)}
-                                onNewGame={startNewGame}
-                            />
-                        )}
+                <div>
+                    <div style={{display: 'flex'}}>
+                        <span style={{marginRight: '10px', fontSize: '29px'}}>{players.black}</span>
+                        <CapturedPiecesComponent pieces={capturedPieces?.black} material={gameState.material_balance} theme={theme} player='black' />
                     </div>
-                </DndProvider>
+                    <DndProvider backend={HTML5Backend}>
+                        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
+                            {renderSquares()}
+                            {showPromotionOptions && promotionMove && <PromotionOptions onSelect={handlePromotionSelect} turn={gameState.turn} promotionSqr={promotionMove.toSquare} theme={theme}/>}
+                            {showGameOverModal && (
+                                <GameOverModal
+                                    message={gameState.is_checkmate ? `Checkmate! ${gameState.turn} wins!` : "Stalemate! It's a draw!"}
+                                    onClose={() => setShowGameOverModal(false)}
+                                    onNewGame={startNewGame}
+                                />
+                            )}
+                        </div>
+                    </DndProvider>
+                    <div style={{display: 'flex'}}>
+                        <span style={{marginRight: '10px', fontSize: '29px'}}>{players.white}</span>
+                        <CapturedPiecesComponent pieces={capturedPieces?.white} material={gameState.material_balance} theme={theme} player='white' />
+                    </div>
+                </div>
                 <Sidebar moveHistory={moveHistory} onRevert={revertLastMove} onHint={showHint} />
             </div>
             <Settings onThemeChange={handleThemeChange} />
         </div>
-        </>
     );
 }

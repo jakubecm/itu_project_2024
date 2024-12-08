@@ -31,6 +31,10 @@
     background: lightblue;
 }
 
+.square-last-move {
+    background: rgba(156, 161, 79, 0.6);
+}
+
 .board-container {
     display: flex;
     flex-direction: column;

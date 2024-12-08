@@ -1,5 +1,4 @@
 import { useDrag } from 'react-dnd';
-import { SQUARE_SIZE } from './board';
 import { calculatePosition } from './utils';
 import './Board.css';
 
@@ -77,3 +76,56 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
         </div>
     );
 };
+
+export interface CapturedPieces {
+    white: Pieces;
+    black: Pieces;
+}
+
+interface Pieces {
+    p: number;
+    r: number;
+    n: number;
+    b: number;
+    q: number;
+}
+
+const SQUARE_SIZE = '80px';
+document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
+
+export const CapturedPiecesComponent: React.FC<{ pieces?: Pieces, material: number, player: string, theme: string }> = ({ pieces, material, player, theme }) => {
+    const pieceOrder = player === 'white' 
+        ? { Q: 'q', R: 'r', B: 'b', N: 'n', P: 'p' } // Opponent's pieces for white player
+        : { Q: 'Q', R: 'R', B: 'B', N: 'N', P: 'P' }; // Opponent's pieces for black player
+
+    const apiUrl = `http://127.0.0.1:5000/themes/${theme}/`;
+
+    const lead = player === 'white' ? material : -material;
+    if (!pieces) {
+        return null;
+    }
+
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', height: '44px', marginLeft: 'auto' }}>
+            {Object.entries(pieceOrder).map(([key, piece]) => (
+                Array(pieces[key.toLowerCase() as keyof Pieces]).fill(null).map((_, index) => (
+                    <img
+                        key={`${piece}-${index}`}
+                        src={apiUrl + pieceSrc[piece]}
+                        alt={`Captured ${piece}`}
+                        height={40}
+                        width={40}
+                        style={{
+                            margin: '2px',
+                            position: 'relative',
+                            marginLeft: `${(index * -25) - 5}px`, // Slight overlap
+                            zIndex: 10-index // Ensures the latest piece is on top
+                        }}
+                    />
+                ))
+            ))}
+            {lead > 0 && <span style={{ fontSize: '1.5em', marginLeft: '10px' }}>+{lead}</span>}
+        </div>
+    );
+};
+

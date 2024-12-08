@@ -19,3 +19,22 @@ export function calculatePosition(promotionSquare: string) {
   
     return { x: xPosition, y: yPosition };
   }
+
+export function parseLastMove(moveHistory: string[]): { fromSquare: string, toSquare: string } {
+  if (moveHistory.length === 0) {
+    return { fromSquare: "", toSquare: "" };
+  };
+    const lastMove = moveHistory[moveHistory.length - 1]; // Get the last move from the history
+    const regex = /(?:Player|AI): (\w\d) to (\w\d)/;
+
+    console.log(lastMove);
+
+    const match = lastMove.match(regex);
+    if (match) {
+        const fromSquare = match[1];
+        const toSquare = match[2];
+        return { fromSquare, toSquare };
+    } else {
+        throw new Error("Invalid move format in history.");
+    }
+}

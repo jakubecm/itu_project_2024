@@ -9,10 +9,11 @@ interface SquareProps {
     handleMove: (from: string, to: string, piece: string) => void; // function that launches when a move is made
     inCheck?: boolean;
     children?: React.ReactNode;  // Piece component
+    lastMove?: boolean;  // bool for highlighting the last move
     onClick: (position: string) => void;  // function that launches when a square is clicked
 }
 
-export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children, onClick }) => {
+export const Square: React.FC<SquareProps> = ({ position, highlighted, selected, handleMove, inCheck, children, lastMove, onClick }) => {
   const [isHovered, setIsHovered] = useState(false); // State for hovering over the square
   const [{ isOver }, dropRef] = useDrop({
     accept: 'piece',
@@ -33,6 +34,7 @@ export const Square: React.FC<SquareProps> = ({ position, highlighted, selected,
     if (highlighted) return selected ? 'square-highlighted-current' : 'square-highlighted';  // When square is highlighted as legal move
     if (selected) return 'square-current';  // When square is selected
     if (inCheck) return 'square-check';  // When the piece is in check
+    if (lastMove) return 'square-last-move';  // When the square is part of the last move
     return isDarkSquare ? 'black-square' : 'white-square';  // Default square color
   };
 
