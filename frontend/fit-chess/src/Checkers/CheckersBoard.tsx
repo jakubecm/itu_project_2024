@@ -5,6 +5,7 @@ import '../board/Board.css';
 import './CheckersBoard.css';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import Sidebar from '../board/Sidebar';
 
 const BOARD_SIZE = 10; // Number of squares per side
 export const SQUARE_SIZE = '64px';
@@ -24,6 +25,7 @@ export const CheckersBoard: React.FC = () => {
   const [playablePieces, setPlayablePieces] = useState<string[]>([]);
   const location = useLocation();
   const variant = location.state?.variant || 'standard';
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
 
   // Fetch the game state from the backend
@@ -49,6 +51,7 @@ export const CheckersBoard: React.FC = () => {
 
       const data = await response.json();
       setGameState(data);
+      setMoveHistory([]);
 
     } catch (error) {
       console.error('Error starting new game:', error);
@@ -184,6 +187,13 @@ export const CheckersBoard: React.FC = () => {
         console.error('Backend rejected move:', data.error);
         return;
       }
+
+      const moveType = movePDN.includes('x') ? 'x' : '-';
+      setMoveHistory((prevHistory) => [
+        ...prevHistory,
+        `${data.turn === 'white' ? 'Black' : 'Red'}: ${fromPosition}${moveType}${toPosition}`,
+      ]);
+
   
       // Handle multi-captures
       if (data.is_capture && data.continue_capture) {
@@ -202,8 +212,6 @@ export const CheckersBoard: React.FC = () => {
       console.error('Error making move:', error);
     }
   };
-  
-  
 
   // Handle piece selection
   const handlePieceSelection = async (position: string) => {
@@ -270,25 +278,35 @@ const renderSquares = () => {
   }
 
   return (
-    <div className="board-container">
-      <DndProvider backend={HTML5Backend}>
-        <div>Turn: {gameState.turn}</div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${BOARD_SIZE}, ${SQUARE_SIZE})`,
-            gap: '0',
-          }}
-        >
-          {renderSquares()}
+    <div className="board-container-check">
+        <div className="board-sidebar-container-check">
+            <div>
+                <DndProvider backend={HTML5Backend}>
+                    <div
+                        style={{
+                            position: 'relative',
+                            display: 'grid',
+                            gridTemplateColumns: `repeat(${BOARD_SIZE}, ${SQUARE_SIZE})`,
+                        }}
+                    >
+                        {renderSquares()}
+                    </div>
+                </DndProvider>
+                <div className="game-info">
+                    {gameState.is_over && <div>Game Over!</div>}
+                </div>
+            </div>
+            <div className="checkers-game-mode">
+              <Sidebar
+                moveHistory={moveHistory}
+                onRevert={null}
+                onHint={null}
+              />
+            </div>
         </div>
-        <div className="game-info">
-          <button onClick={startNewGame}>Start New Game</button>
-          {gameState.is_over && <div>Game Over!</div>}
-        </div>
-      </DndProvider>
     </div>
-  );
+);
+
 };
 
 // Parsing functions and mapping functions
