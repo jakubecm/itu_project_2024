@@ -145,3 +145,14 @@ button:active {
   cursor: not-allowed;
   transform: none;
 }
+
+.button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.disabled-link {
+  pointer-events: none;
+  text-decoration: none;
+}
