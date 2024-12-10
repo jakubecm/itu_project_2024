@@ -32,8 +32,17 @@ function CheckersGameMenu() {
       <div className="menu-container-checkers">
         <div className="menu-item">
           <img src={chessIcon} alt="Chess icon" className="icon" />
-          <Link to="/checkers" state={{ variant: selectedVariant, mode: 'player-vs-ai' }}>
-            <button className="button">Player vs AI</button>
+          <Link 
+            to="/checkers" 
+            state={{ variant: selectedVariant, mode: 'player-vs-ai' }}
+            className={selectedVariant === 'frysk' ? 'disabled-link' : ''}
+          >
+            <button
+              className="button"
+              disabled={selectedVariant === 'frysk'}
+            >
+              Player vs AI
+            </button>
           </Link>
         </div>
         <div className="menu-item">
