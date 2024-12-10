@@ -25,6 +25,7 @@ export const CheckersBoard: React.FC = () => {
   const [playablePieces, setPlayablePieces] = useState<string[]>([]);
   const location = useLocation();
   const variant = location.state?.variant || 'standard';
+  const mode = location.state?.mode || 'freeplay';
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
 
@@ -191,7 +192,7 @@ export const CheckersBoard: React.FC = () => {
       const moveType = movePDN.includes('x') ? 'x' : '-';
       setMoveHistory((prevHistory) => [
         ...prevHistory,
-        `${data.turn === 'white' ? 'Black' : 'Red'}: ${fromPosition}${moveType}${toPosition}`,
+        `${data.turn === 'white' ? 'Black' : 'Red'}: ${fromPosition} ${moveType} ${toPosition}`,
       ]);
 
   
@@ -200,16 +201,54 @@ export const CheckersBoard: React.FC = () => {
         setSelectedPiece(toPosition);
         await fetchLegalMoves(toPosition);
 
+        if ((data.turn === 'black') && (data.ai_available) 
+            && (variant !== 'frysk') && (mode !== 'freeplay')) {
+          setTimeout(() => makeAIMove(), 500);
+        }
+
       } else {
         setSelectedPiece(null);
         setLegalMoves([]);
         setLegalMovesMap({});
+        console.log('turn:', data.turn);
+        console.log('ai_available:', data.ai_available);
+        console.log('variant:', variant);
+        if ((data.turn === 'black') && (data.ai_available) 
+            && (variant !== 'frysk' && (mode !== 'freeplay'))) {
+          setTimeout(() => makeAIMove(), 500);
+        }
       }
 
       await fetchGameState();
       
     } catch (error) {
       console.error('Error making move:', error);
+    }
+  };
+
+  const makeAIMove = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/checkers/checkers_ai_move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await response.json();
+
+      if (response.status === 500) {
+        console.warn('AI not enabled. Skipping AI move.');
+        return;
+      }
+
+      if (data.error) {
+        console.error('AI move failed:', data.error);
+        return;
+      }
+
+      setMoveHistory((prevHistory) => [...prevHistory, `AI: ${data.ai_move}`]);
+      await fetchGameState();
+
+    } catch (error) {
+      console.error('Error making AI move:', error);
     }
   };
 

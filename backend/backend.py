@@ -3,12 +3,14 @@ import os
 import chess
 import chess.engine
 from draughts import Board, Move, WHITE, BLACK
+from draughts.engine import HubEngine, Limit
 from flasgger import Swagger
 from flask import Flask
 from flask_cors import CORS
 import uuid
 import socket
 from collections import Counter
+import time
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains to make requests
@@ -855,6 +857,7 @@ def get_theme_file(theme, filename):
 
 # Initialize a global checkers board object
 checkersBoard = Board(variant="frysk", fen="startpos")
+engine = None
 
 
 @app.route('/checkers/checkers_new_game', methods=['POST'])
@@ -881,7 +884,6 @@ def checkers_new_game():
     global checkersBoard
     data = request.get_json()
     variant = data.get('variant', 'standard')  # Default to 'standard' if not provided
-
     if variant == 'frysk':
         checkersBoard = Board(variant="frysk", fen="startpos")
     else:
@@ -893,6 +895,80 @@ def checkers_new_game():
         'turn': 'white' if checkersBoard.turn == WHITE else 'black'
     })
 
+
+# TODO REWORK OF DIRS
+def initialize_engine():
+    """
+    Initialize the Scan engine if all necessary files exist in the backend directory.
+    """
+    backend_dir = os.path.dirname(os.path.abspath(__file__))  # Get the backend directory
+    scan_exe = os.path.join(backend_dir, "scan.exe")
+    scan_ini = os.path.join(backend_dir, "scan.ini")
+    data_dir = os.path.join(backend_dir, "data")
+
+    # Check if all required files and directories exist
+    if not os.path.exists(scan_exe):
+        print("Warning: scan.exe not found in the backend directory. Skipping engine initialization.")
+        return None
+    if not os.path.exists(scan_ini):
+        print("Warning: scan.ini not found in the backend directory. Skipping engine initialization.")
+        return None
+    if not os.path.exists(data_dir):
+        print("Warning: data directory not found in the backend directory. Skipping engine initialization.")
+        return None
+
+    try:
+        os.chdir(backend_dir)  # Set working directory to backend folder
+        engine = HubEngine([r"scan.exe", "hub"])
+        engine.init()
+        print("Scan engine initialized successfully.")
+        return engine
+    except Exception as e:
+        print(f"Error initializing Scan engine: {e}")
+        return None
+
+# Initialize the engine globally
+engine = initialize_engine()
+
+@app.route('/checkers/checkers_ai_move', methods=['POST'])
+def checkers_ai_move():
+    """
+    Calculate the AI move for the current state of the board.
+    --- 
+    responses:
+      200:
+        description: AI move calculated successfully
+        schema:
+          type: object
+          properties:
+            fen:
+              type: string
+            ai_move:
+              type: string
+            turn:
+              type: string
+            is_over:
+              type: boolean
+      500:
+        description: Error during AI calculation
+    """
+    global checkersBoard
+
+    try:
+        limit = Limit(time=10)
+        result = engine.play(checkersBoard, limit, ponder=False)
+        ai_move = result.move
+        checkersBoard.push(ai_move)
+        return jsonify({
+            'fen': checkersBoard.fen,
+            'ai_move': ai_move.pdn_move,
+            'turn': 'white' if checkersBoard.turn == WHITE else 'black',
+            'is_over': checkersBoard.is_over()
+        })
+    
+    except Exception as e:
+        print("Error in AI move:", e)
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/checkers/checkers_move', methods=['POST'])
 def checkers_make_move():
@@ -954,7 +1030,8 @@ def checkers_make_move():
         'turn': 'white' if checkersBoard.turn == WHITE else 'black',
         'is_capture': 'x' in move_pdn,
         'continue_capture': continue_capture,
-        'legal_moves': next_legal_moves if continue_capture else []
+        'legal_moves': next_legal_moves if continue_capture else [],
+        'ai_available': engine is not None
     })
 
 
@@ -980,7 +1057,7 @@ def checkers_get_game_state():
     return jsonify({
         'fen': checkersBoard.fen,
         'is_over': checkersBoard.is_over(),
-        'turn': 'red' if checkersBoard.turn == WHITE else 'black'
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
     })
 
 
@@ -1083,7 +1160,6 @@ def checkers_get_playable_pieces():
     except Exception as e:
         print("Error:", e)
         return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
