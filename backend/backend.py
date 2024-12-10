@@ -10,7 +10,7 @@ from flask_cors import CORS
 import uuid
 import socket
 from collections import Counter
-import time
+import re
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains to make requests
@@ -859,6 +859,43 @@ def get_theme_file(theme, filename):
 checkersBoard = Board(variant="frysk", fen="startpos")
 engine = None
 
+def generate_square_num_to_position_map():
+    """
+    Generates a mapping of square numbers (1-50) to board positions.
+    """
+    mapping = {}
+    square_num = 1
+    files_even_rank = ['b', 'd', 'f', 'h', 'j']  # Dark squares in even ranks
+    files_odd_rank = ['a', 'c', 'e', 'g', 'i']   # Dark squares in odd ranks
+
+    for rank in range(10, 0, -1):  # Rows 10 to 1
+        is_even = rank % 2 == 0
+        files = files_even_rank if is_even else files_odd_rank
+
+        for file in files:
+            mapping[square_num] = f"{file}{rank}"
+            square_num += 1
+
+    return mapping
+
+# Generate a mapping of square numbers to board positions for FE
+def convert_pdn_to_notation(pdn_move):
+    """
+    Converts a PDN move ("34x28") to board notation ("h4 x e2").
+    """
+    square_num_to_position_map = generate_square_num_to_position_map()
+    parts = re.split(r'[-x]', pdn_move)
+    is_capture = 'x' in pdn_move
+    converted_parts = [square_num_to_position_map[int(part)] for part in parts]
+    return f" {'x' if is_capture else '-'} ".join(converted_parts)
+
+def generate_position_to_square_num_map():
+    """
+    Generates a mapping of board positions to square numbers (reverse of above).
+    """
+    square_num_to_position_map = generate_square_num_to_position_map()
+    return {v: k for k, v in square_num_to_position_map.items()}
+
 
 @app.route('/checkers/checkers_new_game', methods=['POST'])
 def checkers_new_game():
@@ -923,6 +960,7 @@ def initialize_engine():
         engine.init()
         print("Scan engine initialized successfully.")
         return engine
+    
     except Exception as e:
         print(f"Error initializing Scan engine: {e}")
         return None
@@ -959,9 +997,13 @@ def checkers_ai_move():
         result = engine.play(checkersBoard, limit, ponder=False)
         ai_move = result.move
         checkersBoard.push(ai_move)
+
+        # Convert AI move to board notation
+        ai_move = convert_pdn_to_notation(ai_move.pdn_move)
+
         return jsonify({
             'fen': checkersBoard.fen,
-            'ai_move': ai_move.pdn_move,
+            'ai_move': ai_move,
             'turn': 'white' if checkersBoard.turn == WHITE else 'black',
             'is_over': checkersBoard.is_over()
         })
@@ -1003,25 +1045,22 @@ def checkers_make_move():
         description: Invalid move
     """
     global checkersBoard
-    move_pdn = request.json.get('move')  # Get the PDN string ("29x27")
-    print("Attempting move:", move_pdn)
+    move_pdn = request.json.get('move')
 
-    # Get legal moves as PDN strings
-    legal_moves_pdn = [move.pdn_move for move in checkersBoard.legal_moves()]
-    print("Legal moves (PDN):", legal_moves_pdn)
+    # Convert all legal moves to readable board notation ("h4 x e2")
+    legal_moves_pdn = [convert_pdn_to_notation(move.pdn_move) for move in checkersBoard.legal_moves()]
 
-    # Check if the move is in the legal moves
     if move_pdn not in legal_moves_pdn:
         return jsonify({'error': 'Illegal move'}), 400
 
-    # Find and apply the matching legal move
-    for legal_move in checkersBoard.legal_moves():
-        if legal_move.pdn_move == move_pdn:
-            checkersBoard.push(legal_move)  # Apply the move
+    # Find and apply the matching move
+    for move in checkersBoard.legal_moves():
+        if convert_pdn_to_notation(move.pdn_move) == move_pdn:  # Match readable notation
+            checkersBoard.push(move)
             break
 
-    # Check if the current piece can make another capture
-    next_legal_moves = [move.pdn_move for move in checkersBoard.legal_moves()]
+    # Convert remaining legal moves for potential captures to board notation
+    next_legal_moves = [convert_pdn_to_notation(move.pdn_move) for move in checkersBoard.legal_moves()]
     continue_capture = any('x' in move for move in next_legal_moves)
 
     return jsonify({
@@ -1079,50 +1118,29 @@ def checkers_get_legal_moves():
     """
     global checkersBoard
     try:
-        # Parse the request body
-        data = request.json
-        position = data.get("position")
+        position = request.json.get("position")
 
         if position is None:
             return jsonify({'error': 'Position is required'}), 400
 
-        legal_moves = []
-        for move in checkersBoard.legal_moves():
-            # Extract starting square from move.pdn_move
-            pdn_move = move.pdn_move  # Example: "34-28" or "34x28"
-            start_square = int(pdn_move.split('x')[0] if 'x' in pdn_move else pdn_move.split('-')[0])
+        # Convert position to square number
+        position_to_square_num_map = generate_position_to_square_num_map()
+        square_num = position_to_square_num_map.get(position)
+        if square_num is None:
+            return jsonify({'error': 'Invalid position'}), 400
 
-            # If the starting square matches the requested position, add the move
-            if start_square == position:
-                legal_moves.append(pdn_move)
-
-        if not legal_moves:
-            return jsonify({'legal_moves': []}), 200  # Return empty list if no moves
+        # Filter and convert legal moves for the given position
+        legal_moves = [
+            convert_pdn_to_notation(move.pdn_move)
+            for move in checkersBoard.legal_moves()
+            if int(move.pdn_move.split('x')[0] if 'x' in move.pdn_move else move.pdn_move.split('-')[0]) == square_num
+        ]
 
         return jsonify({'legal_moves': legal_moves})
-
+    
     except Exception as e:
         print("Error:", e)
         return jsonify({'error': str(e)}), 500
-    
-def generate_square_num_to_position_map():
-    """
-    Generates a mapping of square numbers (1-50) to board positions
-    """
-    mapping = {}
-    square_num = 1
-    files_even_rank = ['b', 'd', 'f', 'h', 'j']  # Dark squares in even ranks
-    files_odd_rank = ['a', 'c', 'e', 'g', 'i']   # Dark squares in odd ranks
-
-    for rank in range(10, 0, -1):  # Rows 10 to 1
-        is_even = rank % 2 == 0  # Check if the rank is even
-        files = files_even_rank if is_even else files_odd_rank
-
-        for file in files:
-            mapping[square_num] = f"{file}{rank}"  # Map square number to position
-            square_num += 1
-
-    return mapping
     
 @app.route('/checkers/playable_pieces', methods=['GET'])
 def checkers_get_playable_pieces():
@@ -1142,21 +1160,18 @@ def checkers_get_playable_pieces():
     """
     global checkersBoard
     try:
-        # A set to hold unique starting positions of pieces with legal moves
-        playable_pieces = set()
+        # Get starting squares of all legal moves
+        playable_squares = {
+            int(move.pdn_move.split('x')[0] if 'x' in move.pdn_move else move.pdn_move.split('-')[0])
+            for move in checkersBoard.legal_moves()
+        }
 
-        # Loop through all legal moves and collect their starting squares
-        for move in checkersBoard.legal_moves():
-            pdn_move = move.pdn_move  # Example: "34-28" or "34x28"
-            start_square = int(pdn_move.split('x')[0] if 'x' in pdn_move else pdn_move.split('-')[0])
-            playable_pieces.add(start_square)
-
-        # Convert square numbers to positions
+        # Convert to board notation
         square_num_to_position_map = generate_square_num_to_position_map()
-        playable_positions = [square_num_to_position_map[square] for square in playable_pieces]
+        playable_positions = [square_num_to_position_map[square] for square in playable_squares]
 
         return jsonify({'playable_pieces': playable_positions}), 200
-
+    
     except Exception as e:
         print("Error:", e)
         return jsonify({'error': str(e)}), 500

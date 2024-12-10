@@ -66,18 +66,10 @@ export const CheckersBoard: React.FC = () => {
   // Fetch legal moves for a given position
   const fetchLegalMoves = async (position: string) => {
     try {
-      const positionToSquareNumMap = generatePositionToSquareNumMap();
-      const squareNum = positionToSquareNumMap[position];
-  
-      if (!squareNum) {
-        console.error('Invalid position:', position);
-        return {};
-      }
-  
       const response = await fetch('http://127.0.0.1:5000/checkers/checkers_legal_moves', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ position: squareNum }),
+        body: JSON.stringify({ position }),
       });
   
       if (!response.ok) {
@@ -86,22 +78,15 @@ export const CheckersBoard: React.FC = () => {
       }
   
       const data = await response.json();
-      if (!data.legal_moves) {
-        console.warn('No legal moves returned by backend');
-        return {};
-      }
-      
-      // Generate a mapping from square numbers to positions
-      const squareNumToPositionMap = generateSquareNumToPositionMap();
-      const movesMap: { [toPosition: string]: string } = {};
   
+      // Construct the legalMovesMap
+      const movesMap: { [toPosition: string]: string } = {};
       data.legal_moves.forEach((move: string) => {
-        const parts = move.split(/[-x]/g);
-        const toNum = parseInt(parts[parts.length - 1], 10);
-        const toPosition = squareNumToPositionMap[toNum];
+        const parts = move.split(/[-x]/g).map((p) => p.trim()); // Split and trim whitespace
+        const toPosition = parts[1]; // 'to' position is the second part
         movesMap[toPosition] = move;
       });
-  
+      
       setLegalMoves(Object.keys(movesMap));
       setLegalMovesMap(movesMap);
       return movesMap; // Return the movesMap
@@ -111,7 +96,7 @@ export const CheckersBoard: React.FC = () => {
       return {};
     }
   };
-
+  
   // Fetch playable pieces for the current turn
   const fetchPlayablePieces = async () => {
     try {
@@ -169,12 +154,13 @@ export const CheckersBoard: React.FC = () => {
 
   // Make a move
   const makeMove = async (fromPosition: string, toPosition: string, legalMovesMap: { [toPosition: string]: string }) => {
-    const movePDN = legalMovesMap[toPosition];
+    // Find the move in PDN format from the legalMovesMap
+    const movePDN = Object.values(legalMovesMap).find((move) => move.includes(toPosition));
     if (!movePDN) {
       console.error('Invalid move:', fromPosition, '->', toPosition);
       return;
     }
-
+  
     // Proceed with making the move
     try {
       const response = await fetch('http://127.0.0.1:5000/checkers/checkers_move', {
@@ -188,19 +174,16 @@ export const CheckersBoard: React.FC = () => {
         console.error('Backend rejected move:', data.error);
         return;
       }
-
-      const moveType = movePDN.includes('x') ? 'x' : '-';
+  
       setMoveHistory((prevHistory) => [
         ...prevHistory,
-        `${data.turn === 'white' ? 'Black' : 'Red'}: ${fromPosition} ${moveType} ${toPosition}`,
+        `${data.turn === 'white' ? 'Black' : 'Red'}: ${movePDN}`,
       ]);
-
   
       // Handle multi-captures
       if (data.is_capture && data.continue_capture) {
         setSelectedPiece(toPosition);
         await fetchLegalMoves(toPosition);
-
         if ((data.turn === 'black') && (data.ai_available) 
             && (variant !== 'frysk') && (mode !== 'freeplay')) {
           setTimeout(() => makeAIMove(), 500);
@@ -210,17 +193,13 @@ export const CheckersBoard: React.FC = () => {
         setSelectedPiece(null);
         setLegalMoves([]);
         setLegalMovesMap({});
-        console.log('turn:', data.turn);
-        console.log('ai_available:', data.ai_available);
-        console.log('variant:', variant);
         if ((data.turn === 'black') && (data.ai_available) 
-            && (variant !== 'frysk' && (mode !== 'freeplay'))) {
+            && (variant !== 'frysk') && (mode !== 'freeplay')) {
           setTimeout(() => makeAIMove(), 500);
         }
       }
-
       await fetchGameState();
-      
+
     } catch (error) {
       console.error('Error making move:', error);
     }
@@ -404,30 +383,6 @@ function generateSquareNumToPositionMap(): { [squareNum: number]: string } {
         // Calculate the position, 97 = 'a', + column to get the letter
         const position = `${String.fromCharCode(97 + column)}${row}`;
         mapping[squareNum] = position;
-
-        // Increment the square number for the next playable square
-        squareNum++;
-      }
-    }
-  }
-
-  return mapping;
-}
-
-// Function to generate a mapping from board positions ("a10") to square numbers
-function generatePositionToSquareNumMap(): { [position: string]: number } {
-  const mapping: { [position: string]: number } = {};
-  let squareNum = 1;
-
-  // Loop through rows starting from 10
-  for (let row = 10; row >= 1; row--) {
-    // Loop through columns from 0 to 9, Column 0 is 'a'
-    for (let column = 0; column < 10; column++) {
-      // Playable squares alternate based on the sum of row + column being odd
-      if ((row + column) % 2 === 1) {
-        // Calculate the position, 97 = 'a', + column to get the letter
-        const position = `${String.fromCharCode(97 + column)}${row}`;
-        mapping[position] = squareNum;
 
         // Increment the square number for the next playable square
         squareNum++;
