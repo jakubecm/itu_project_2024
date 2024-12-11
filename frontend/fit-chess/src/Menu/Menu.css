@@ -156,3 +156,38 @@ button:active {
   pointer-events: none;
   text-decoration: none;
 }
+
+.custom-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.custom-settings label {
+  font-size: 2em;
+  font-weight: 700;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.custom-settings input[type="number"] {
+  font-size: 1.5em;
+  font-weight: 700;
+  color: black;
+  background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
+  border: 5px solid black;
+  border-radius: 45px;
+  text-align: center;
+  width: 100px;
+  padding: 10px;
+  margin-top: 10px;
+  outline: none; 
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.custom-settings input[type="number"]:focus {
+  transform: scale(1.05);
+}

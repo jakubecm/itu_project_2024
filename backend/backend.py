@@ -899,39 +899,78 @@ def generate_position_to_square_num_map():
 
 @app.route('/checkers/checkers_new_game', methods=['POST'])
 def checkers_new_game():
-    """
-    Start a new checkers game.
-    ---
-    responses:
-      200:
-        description: A new game is started
-        schema:
-          type: object
-          properties:
-            message:
-              type: string
-              example: New game started
-            fen:
-              type: string
-              example: "W:W18,21,22,23,24,25,26,27,28:B12,13,14,15,16,17,19,20,29"
-            turn:
-              type: string
-              example: white
-    """
     global checkersBoard
     data = request.get_json()
-    variant = data.get('variant', 'standard')  # Default to 'standard' if not provided
+    variant = data.get('variant', 'standard')     # Default to 'standard'
+    piece_count = data.get('piece_count', None)   # Number of pieces per side
+    king_count = data.get('king_count', 0)        # Number of kings per side
+
     if variant == 'frysk':
-        checkersBoard = Board(variant="frysk", fen="startpos")
+      checkersBoard = Board(variant="frysk", fen="startpos")
     else:
-        checkersBoard = Board()
+      fen = generate_custom_fen(piece_count, king_count, variant="standard")
+      checkersBoard = Board(variant="standard", fen=fen)
 
     return jsonify({
-        'message': f'New {variant} game started',
+        'message': f'New {variant} game started with {piece_count if piece_count else "default"} pieces and {king_count} kings',
         'fen': checkersBoard.fen,
         'turn': 'white' if checkersBoard.turn == WHITE else 'black'
     })
 
+
+def generate_custom_fen(piece_count, king_count=0, variant="standard"):
+    """
+    Generate a FEN string for a given piece_count and king_count.
+    """
+    # Define starting positions for up to 20 pieces per side
+    black_starts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+                    11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    white_starts = [50, 49, 48, 47, 46, 45, 44, 43, 42, 41,
+                    40, 39, 38, 37, 36, 35, 34, 33, 32, 31]
+
+    # Trim to piece_count
+    black_positions = black_starts[:piece_count]
+    white_positions = white_starts[:piece_count]
+
+    # Ensure king_count is not more than piece_count
+    king_count = min(king_count, piece_count)
+
+    # Split pieces into kings and men
+    black_kings = black_positions[:king_count]
+    black_men = black_positions[king_count:]
+    white_kings = white_positions[:king_count]
+    white_men = white_positions[king_count:]
+
+    # Function to format a list of kings and men for a given color
+    def format_pieces(color, kings, men):
+        # color: 'W' or 'B'
+        pieces = []
+        # Start with kings if any
+        if kings:
+            # First king piece sets the color and the king prefix
+            pieces.append(f"{color}K{kings[0]}")
+            # Next kings just get 'K' prefix
+            for kpos in kings[1:]:
+                pieces.append(f"K{kpos}")
+            # Now if men follow, they come after the kings without repeating color
+            for mpos in men:
+                pieces.append(str(mpos))
+        else:
+            # No kings, start with men
+            if men:
+                # First man sets the color
+                pieces.append(f"{color}{men[0]}")
+                # Next men just their position
+                for mpos in men[1:]:
+                    pieces.append(str(mpos))
+        return ",".join(pieces)
+
+    white_fen = format_pieces('W', white_kings, white_men)
+    black_fen = format_pieces('B', black_kings, black_men)
+
+    fen = f"W:{white_fen}:{black_fen}"
+    print(f"Generated custom FEN: {fen}")
+    return fen
 
 # TODO REWORK OF DIRS
 def initialize_engine():

@@ -28,6 +28,11 @@ export const CheckersBoard: React.FC = () => {
   const mode = location.state?.mode || 'freeplay';
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
 
+  const initialPieceCount = location.state?.piece_count || (variant === 'frysk' ? 5 : 20);
+  const initialKingCount = location.state?.king_count || 0;
+  const [pieceCount] = useState(initialPieceCount);
+  const [kingCount] = useState(initialKingCount);
+
 
   // Fetch the game state from the backend
   const fetchGameState = async () => {
@@ -47,21 +52,20 @@ export const CheckersBoard: React.FC = () => {
       const response = await fetch('http://127.0.0.1:5000/checkers/checkers_new_game', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ variant }),
+        body: JSON.stringify({ variant, piece_count: pieceCount, king_count: kingCount }),
       });
-
+  
       const data = await response.json();
       setGameState(data);
       setMoveHistory([]);
-
     } catch (error) {
       console.error('Error starting new game:', error);
     }
-  }, [variant]);
+  }, [variant, pieceCount, kingCount]);
 
   useEffect(() => {
     startNewGame();
-  }, [startNewGame]);
+  }, [startNewGame, variant]);
 
   // Fetch legal moves for a given position
   const fetchLegalMoves = async (position: string) => {
@@ -198,6 +202,7 @@ export const CheckersBoard: React.FC = () => {
           setTimeout(() => makeAIMove(), 500);
         }
       }
+      console.log(gameState?.fen);
       await fetchGameState();
 
     } catch (error) {
