@@ -15,20 +15,22 @@ interface GameState {
   fen: string;
   turn: string;
   is_over: boolean;
+  board_map: { [position: string]: string };
 }
 
 export const CheckersBoard: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-  const [legalMoves, setLegalMoves] = useState<string[]>([]);
-  const [legalMovesMap, setLegalMovesMap] = useState<{ [toPosition: string]: string }>({});
-  const [playablePieces, setPlayablePieces] = useState<string[]>([]);
+  const [selectedPiece, setSelectedPiece] = useState<string | null>(null);  // Selected piece position
+  const [legalMoves, setLegalMoves] = useState<string[]>([]); // Legal moves for the selected piece (highlighted)
+  const [legalMovesMap, setLegalMovesMap] = useState<{ [toPosition: string]: string }>({}); // Map of legal moves, for full move strings
+  const [playablePieces, setPlayablePieces] = useState<string[]>([]); // Playable pieces for the current turn (highlighted)
   const location = useLocation();
-  const variant = location.state?.variant || 'standard';
+  const variant = location.state?.variant || 'standard';  
   const mode = location.state?.mode || 'freeplay';
-  const [moveHistory, setMoveHistory] = useState<string[]>([]);
-  const fenFromState = location.state?.fen;
+  const [moveHistory, setMoveHistory] = useState<string[]>([]); // Move history for the sidebar
+  const fenFromState = location.state?.fen; // Custom fen from board setup mode
 
+  // Initial piece and king count
   const initialPieceCount = location.state?.piece_count || (variant === 'frysk' ? 5 : 20);
   const initialKingCount = location.state?.king_count || 0;
   const [pieceCount] = useState(initialPieceCount);
@@ -154,7 +156,7 @@ export const CheckersBoard: React.FC = () => {
 
   // Handle square click
   const handleSquareClick = async (position: string) => {
-    const board = parseCheckersFEN(gameState!.fen);
+    const board = gameState!.board_map;
     const piece = board[position];
   
     // If a piece is selected and the clicked square is a legal move
@@ -288,7 +290,7 @@ const renderSquares = () => {
   const columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
   const rows = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
-  const board = parseCheckersFEN(gameState!.fen);
+  const board = gameState?.board_map || {};
 
   for (const row of rows) {
     for (const column of columns) {
@@ -353,72 +355,5 @@ const renderSquares = () => {
             </div>
         </div>
     </div>
-);
-
+  );
 };
-
-// Parsing functions and mapping functions
-
-function parseCheckersFEN(fen: string) {
-  const board: { [position: string]: string } = {};
-  const parts = fen.split(':');
-  const piecePositions = parts.slice(1);
-
-  // Generate the mapping from square numbers to positions
-  const squareNumToPositionMap = generateSquareNumToPositionMap();
-
-  piecePositions.forEach((piecePos) => {
-    if (piecePos.length === 0) return;
-    const color = piecePos[0]; // W/B
-    const positionsStr = piecePos.slice(1); // Remove the color letter
-
-    // Split positions and handle kings
-    const positionsArr = positionsStr.split(',');
-    positionsArr.forEach((posStr) => {
-      let isKing = false;
-      let posNumStr = posStr;
-      if (posStr.includes('K')) {
-        isKing = true;
-        posNumStr = posStr.replace('K', ''); // Remove the 'K' from the position
-      }
-
-      const squareNum = parseInt(posNumStr, 10);
-      const boardPos = squareNumToPositionMap[squareNum]; // Get the board position
-      if (boardPos) {
-        // Set the piece type on the board
-        let pieceType = color === 'W' ? 'r' : 'b';
-        if (isKing) {
-          pieceType = pieceType.toUpperCase(); // 'R' or 'B' for kings
-        }
-
-        board[boardPos] = pieceType; // Set the piece type on the board
-      }
-    });
-  });
-
-  return board;
-}
-
-// Function to generate a mapping from square numbers (1 to 50) to board positions
-function generateSquareNumToPositionMap(): { [squareNum: number]: string } {
-  const mapping: { [squareNum: number]: string } = {};
-  let squareNum = 1;
-
-  // Loop through rows starting from 10
-  for (let row = 10; row >= 1; row--) {
-    // Loop through columns from 0 to 9, Column 0 is 'a'
-    for (let column = 0; column < 10; column++) {
-      // Check if the square is playable (odd)
-      if ((row + column) % 2 === 1) {
-        // Calculate the position, 97 = 'a', + column to get the letter
-        const position = `${String.fromCharCode(97 + column)}${row}`;
-        mapping[squareNum] = position;
-
-        // Increment the square number for the next playable square
-        squareNum++;
-      }
-    }
-  }
-
-  return mapping;
-}

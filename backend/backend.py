@@ -911,10 +911,13 @@ def checkers_new_game():
       fen = generate_custom_fen(piece_count, king_count, variant="standard")
       checkersBoard = Board(variant="standard", fen=fen)
 
+    board_map = parse_checkers_fen(checkersBoard.fen)
+
     return jsonify({
         'message': f'New {variant} game started with {piece_count if piece_count else "default"} pieces and {king_count} kings',
         'fen': checkersBoard.fen,
-        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black',
+        'board_map': board_map
     })
 
 
@@ -971,6 +974,50 @@ def generate_custom_fen(piece_count, king_count=0, variant="standard"):
     fen = f"W:{white_fen}:{black_fen}"
     print(f"Generated custom FEN: {fen}")
     return fen
+
+def parse_checkers_fen(fen):
+    """
+    Parse a FEN string for checkers into a dictionary of positions and piece types.
+    Piece types:
+      - 'r' = white man
+      - 'R' = white king
+      - 'b' = black man
+      - 'B' = black king
+    """
+    board_map = {}
+    parts = fen.split(':')
+    piecePositions = parts[1:]  # Skip the first part, which usually is 'W' or 'B'
+
+    squareNumToPositionMap = generate_square_num_to_position_map()
+
+    for piecePos in piecePositions:
+        if len(piecePos) == 0:
+            continue
+        color = piecePos[0]  # 'W' or 'B'
+        positionsStr = piecePos[1:]  # Remove the color letter
+
+        # Split positions and handle kings
+        positionsArr = positionsStr.split(',')
+        for posStr in positionsArr:
+            if not posStr:
+                continue
+
+            isKing = 'K' in posStr
+            posNumStr = posStr.replace('K', '')
+
+            try:
+                squareNum = int(posNumStr)
+            except ValueError:
+                continue
+
+            boardPos = squareNumToPositionMap.get(squareNum)
+            if boardPos:
+                pieceType = 'r' if color == 'W' else 'b'
+                if isKing:
+                    pieceType = pieceType.upper()  # 'R' or 'B' for kings
+                board_map[boardPos] = pieceType
+
+    return board_map
 
 # TODO REWORK OF DIRS
 def initialize_engine():
@@ -1132,10 +1179,12 @@ def checkers_get_game_state():
               type: string
     """
     global checkersBoard
+    board_map = parse_checkers_fen(checkersBoard.fen)
     return jsonify({
         'fen': checkersBoard.fen,
         'is_over': checkersBoard.is_over(),
-        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black',
+        'board_map': board_map
     })
 
 
@@ -1223,11 +1272,13 @@ def checkers_custom_setup():
     variant = data.get('variant', 'standard')
 
     checkersBoard = Board(variant=variant, fen=fen)
+    board_map = parse_checkers_fen(checkersBoard.fen)
 
     return jsonify({
         'message': 'Custom setup applied',
         'fen': checkersBoard.fen,
-        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black',
+        'board_map': board_map
     })
 
 @app.route('/checkers/generate_fen_from_setup', methods=['POST'])
