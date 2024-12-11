@@ -27,6 +27,7 @@ export const CheckersBoard: React.FC = () => {
   const variant = location.state?.variant || 'standard';
   const mode = location.state?.mode || 'freeplay';
   const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const fenFromState = location.state?.fen;
 
   const initialPieceCount = location.state?.piece_count || (variant === 'frysk' ? 5 : 20);
   const initialKingCount = location.state?.king_count || 0;
@@ -63,9 +64,33 @@ export const CheckersBoard: React.FC = () => {
     }
   }, [variant, pieceCount, kingCount]);
 
+  // Start the game with custom fen from board setup mode
+  const applyCustomFen = useCallback(async () => {
+    if (fenFromState) {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/checkers/checkers_custom_setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fen: fenFromState, variant }),
+        });
+        const data = await response.json();
+        setGameState(data);
+        setMoveHistory([]);
+        
+      } catch (error) {
+        console.error('Error applying custom fen:', error);
+      }
+    }
+  }, [fenFromState, variant]);
+
   useEffect(() => {
-    startNewGame();
-  }, [startNewGame, variant]);
+    if (fenFromState && mode === 'freeplay') {
+      applyCustomFen();
+
+    } else {
+      startNewGame();
+    }
+  }, [startNewGame, fenFromState, mode, applyCustomFen]);
 
   // Fetch legal moves for a given position
   const fetchLegalMoves = async (position: string) => {
