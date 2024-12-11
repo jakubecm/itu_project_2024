@@ -1214,6 +1214,80 @@ def checkers_get_playable_pieces():
     except Exception as e:
         print("Error:", e)
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/checkers/checkers_custom_setup', methods=['POST'])
+def checkers_custom_setup():
+    global checkersBoard
+    data = request.get_json()
+    fen = data.get('fen', 'W::B')  # default empty board if none provided
+    variant = data.get('variant', 'standard')
+
+    checkersBoard = Board(variant=variant, fen=fen)
+
+    return jsonify({
+        'message': 'Custom setup applied',
+        'fen': checkersBoard.fen,
+        'turn': 'white' if checkersBoard.turn == WHITE else 'black'
+    })
+
+@app.route('/checkers/generate_fen_from_setup', methods=['POST'])
+def generate_fen_from_setup():
+    data = request.get_json()
+    pieces = data.get('pieces', [])
+
+    square_num_to_position_map = generate_square_num_to_position_map()
+    position_to_square_num = {v: k for k, v in square_num_to_position_map.items()}
+
+    white_men = []
+    white_kings = []
+    black_men = []
+    black_kings = []
+
+    # Parse the pieces and assign them to the respective lists
+    for p in pieces:
+        pos = p['position']
+        ptype = p['type']
+        sq_num = position_to_square_num.get(pos) # Get square number from position
+        if not sq_num:
+            continue
+
+        if ptype == 'r':
+            white_men.append(sq_num)
+        elif ptype == 'R':
+            white_kings.append(sq_num)
+        elif ptype == 'b':
+            black_men.append(sq_num)
+        elif ptype == 'B':
+            black_kings.append(sq_num)
+
+    # Generate the FEN string
+    def format_pieces(color, kings, men):
+        pieces = []
+        if kings:
+            # First king piece sets the color and the king prefix
+            pieces.append(f"{color}K{kings[0]}")
+            # Next kings just get 'K' prefix
+            for kpos in kings[1:]:
+                pieces.append(f"K{kpos}")
+            for mpos in men:
+                pieces.append(str(mpos))
+        else:
+            # Man pieces
+            if men:
+                # Sets the color
+                pieces.append(f"{color}{men[0]}")
+                for mpos in men[1:]:
+                    # Just numbers after
+                    pieces.append(str(mpos))
+            else:
+                pieces.append(color)
+        return ",".join(pieces)
+
+    white_fen = format_pieces('W', white_kings, white_men)
+    black_fen = format_pieces('B', black_kings, black_men)
+    fen = f"W:{white_fen}:{black_fen}"
+
+    return jsonify({'fen': fen})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

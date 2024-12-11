@@ -8,6 +8,7 @@ import TutorialList from './Tutorial/TutorialList';
 import { TutorialBoard } from './Tutorial/Tutorial1';
 import { CheckersBoard } from './Checkers/CheckersBoard';
 import CheckersGameMenu from './Menu/CheckersGameMenu';
+import { CheckersCustomSetup } from './Checkers/CheckersCustomSetup';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/tutorial1" element={< TutorialBoard />} />
           <Route path="/checkers/new-game" element={< CheckersGameMenu />} />
           <Route path="/checkers" element={<CheckersBoard />} />
+          <Route path="/checkers/custom-setup" element={<CheckersCustomSetup />} />
         </Routes>
       </div>
     </Router>

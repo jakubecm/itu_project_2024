@@ -6,8 +6,8 @@ import chessIcon from '../assets/menu-icon.png';
 function CheckersGameMenu() {
   const navigate = useNavigate();
   const [selectedVariant, setSelectedVariant] = useState('standard');
-  const [pieceCount, setPieceCount] = useState(20); // Default piece count
-  const [kingCount, setKingCount] = useState(0);    // Default king count
+  const [pieceCount, setPieceCount] = useState(20);
+  const [kingCount, setKingCount] = useState(0);
 
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
@@ -44,7 +44,7 @@ function CheckersGameMenu() {
           className={`variant-button ${selectedVariant === 'custom' ? 'selected' : ''}`}
           onClick={() => handleVariantChange('custom')}
         >
-          Custom
+          Setup
         </button>
       </div>
 
@@ -97,6 +97,17 @@ function CheckersGameMenu() {
           >
             <button className="button">
               Freeplay
+            </button>
+          </Link>
+        </div>
+        <div className="menu-item">
+          <img src={chessIcon} alt="Chess icon" className="icon" />
+          <Link 
+            to="/checkers/custom-setup"
+            state={{ variant: selectedVariant }}
+          >
+            <button className="button">
+              Custom Board
             </button>
           </Link>
         </div>
