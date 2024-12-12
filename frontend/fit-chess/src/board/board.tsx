@@ -470,7 +470,7 @@ export const Board: React.FC<unknown> = () => {
             <div className='board-sidebar-container'>
                 <div>
                     <div style={{display: 'flex'}}>
-                        <span style={{marginRight: '10px', fontSize: '29px'}}>{players.black}</span>
+                        <span className='board-text' style={{marginRight: '10px', fontSize: '29px'}}>{players.black}</span>
                         <CapturedPiecesComponent pieces={capturedPieces?.black} material={gameState.material_balance} theme={theme} player='black' />
                     </div>
                     <DndProvider backend={HTML5Backend}>
@@ -487,7 +487,7 @@ export const Board: React.FC<unknown> = () => {
                         </div>
                     </DndProvider>
                     <div style={{display: 'flex'}}>
-                        <span style={{marginRight: '10px', fontSize: '29px'}}>{players.white}</span>
+                        <span className='board-text' style={{marginRight: '10px', fontSize: '29px'}}>{players.white}</span>
                         <CapturedPiecesComponent pieces={capturedPieces?.white} material={gameState.material_balance} theme={theme} player='white' />
                     </div>
                 </div>
