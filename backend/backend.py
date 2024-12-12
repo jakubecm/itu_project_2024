@@ -21,6 +21,12 @@ board = chess.Board()
 # A global list to store the move history to be able to undo moves
 move_history = []
 
+difficulties = {
+    "beginner": {"skill_level": 1, "depth": 2},
+    "intermediate": {"skill_level": 10, "depth": 5},
+    "none": {"skill_level": 0, "depth": 0},
+}
+
 STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 THEMES_DIRECTORY = os.path.join(BASE_DIR, 'themes')
@@ -70,7 +76,7 @@ def new_tutorial():
     """
     global board
     board = chess.Board()  # Reset the board to the starting position
-    board.set_fen("8/8/8/8/8/8/8/R7 w KQkq - 0 1")  
+    board.set_fen("8/8/8/8/8/8/8/R6R w KQkq - 0 1")  
     return jsonify({
         'message': 'New game started',
         'fen': board.fen(),  # Return the FEN notation for the starting position
@@ -291,8 +297,14 @@ def ai_move():
     AI move endpoint which takes skill level and depth as parameters.
     """
     global board, move_history
-    skill_level = request.json.get("skill_level", 5)  # Default to skill level 5
-    depth = request.json.get("depth", 2)              # Default to depth 2
+    data = request.get_json()
+    level = data.get('level', 'none') # Default to 'none' if not provided
+
+    if level not in difficulties:
+        return jsonify({'error': 'Invalid difficulty level'}), 400
+    
+    skill_level = difficulties[level].get('skill_level', 0)
+    depth = difficulties[level].get('depth', 0)
 
     try:
         with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
@@ -853,6 +865,47 @@ def get_theme_file(theme, filename):
     theme_path = os.path.join(THEMES_DIRECTORY, theme)
     return send_from_directory(theme_path, filename)
   
+# Custom difficulty endpoints
+
+@app.route('/difficulty/create', methods=['POST'])
+def create_difficulty():
+    data = request.get_json()
+    level = data.get('level')
+    settings = data.get('settings')
+    
+    if level in difficulties:
+        return jsonify({'error': 'Difficulty already exists'}), 400
+
+    difficulties[level] = settings
+    return jsonify({'message': f'Difficulty {level} created', 'settings': settings}), 201
+
+@app.route('/difficulty/list', methods=['GET'])
+def list_difficulties():
+    return jsonify(difficulties)
+
+@app.route('/difficulty/edit', methods=['POST'])
+def edit_difficulty():
+    data = request.get_json()
+    level = data.get('level')
+    new_settings = data.get('settings')
+
+    if level not in difficulties:
+        return jsonify({'error': 'Difficulty not found'}), 404
+
+    difficulties[level].update(new_settings)
+    return jsonify({'message': f'Difficulty {level} updated', 'new_settings': difficulties[level]}), 200
+
+@app.route('/difficulty/delete', methods=['POST'])
+def delete_difficulty():
+    data = request.get_json()
+    level = data.get('level')
+
+    if level not in difficulties:
+        return jsonify({'error': 'Difficulty not found'}), 404
+
+    del difficulties[level]
+    return jsonify({'message': f'Difficulty {level} deleted'}), 200
+
 # Checkers API Endpoints
 
 # Initialize a global checkers board object
