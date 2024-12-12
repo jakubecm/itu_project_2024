@@ -69,3 +69,7 @@
     border: none; /* Remove default button border */
     padding: 0; /* Remove default button padding */
 }
+
+.board-text {
+    color: #553737;
+}

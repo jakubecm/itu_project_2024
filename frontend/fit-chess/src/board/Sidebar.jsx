@@ -15,11 +15,11 @@ const Sidebar = ({ moveHistory, onRevert, onHint }) => {
     return (
         <div className="sidebar">
 
-                <h3>Move History</h3>
+                <h3 className='sidebar-text'>Move History</h3>
                 <div className="move-history">
 
                     {moveHistory.map((move, index) => (
-                        <div key={index} ref={index === moveHistory.length - 1 ? endOfListRef : null}>
+                        <div className='sidebar-text' key={index} ref={index === moveHistory.length - 1 ? endOfListRef : null}>
                             {move}
                         </div>
                     ))}
