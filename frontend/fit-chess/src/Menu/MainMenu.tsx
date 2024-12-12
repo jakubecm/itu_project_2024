@@ -6,9 +6,9 @@ function MainMenu() {
   return (
     <div className="main-menu">
       <div className="logo-container">
-        <img src={chessIcon} alt="Chess icon" className="icon" />
+        <img src={chessIcon} alt="Chess icon" className="main-icon" />
         <h1 className="title">Chessnek</h1>
-        <img src={chessIcon} alt="Chess icon" className="icon" />
+        <img src={chessIcon} alt="Chess icon" className="main-icon" />
       </div>
       <div className="menu-buttons">
         <Link to="/new-game">

@@ -19,11 +19,6 @@
   gap: 70px; /* Space between logo and title */
 }
 
-.icon {
-  width: 220px;  /* Larger icon */
-  height: 220px;
-}
-
 .title {
   font-family: 'Lexend Tera', sans-serif;
   font-size: 6em;  /* Large title */
@@ -39,9 +34,11 @@
 }
 
 button {
-  padding: 15px 25px;
-  font-size: 2.5em;
-  font-weight: 700;
+  padding: 5px 20px;
+  font-size: 2em;
+  font-weight: 600;
+  margin-right: 5px;
+  margin-left: 5px;
   color: black;
   background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
   border: 5px solid black;
@@ -63,7 +60,8 @@ button:active {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
   background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
   text-align: center;
 }
@@ -92,9 +90,14 @@ button:active {
   gap: 30px; /* Space between icon and button */
 }
 
-.icon {
+.main-icon {
   width: 170px;
   height: 170px;
+}
+
+.icon{
+  width: 85px;
+  height: 85px;
 }
 
 .main-menu .menu-buttons:nth-of-type(2) {
@@ -190,4 +193,33 @@ button:active {
 
 .custom-settings input[type="number"]:focus {
   transform: scale(1.05);
+}
+
+.difficulty-item {
+  align-items: center;
+  gap: 20px;
+  background-color: #553737;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 15px;
+  color: black;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: large;
+  border: 2px solid black; 
+}
+
+.create-difficulty-button{
+  padding: 5px 20px;
+  font-size: 2em;
+  font-weight: 600;
+  margin-right: 5px;
+  margin-left: 5px;
+  color: black;
+  background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
+  border: 5px solid black;
+  border-radius: 45px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-top: 30px;
 }

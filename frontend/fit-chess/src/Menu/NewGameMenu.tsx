@@ -7,7 +7,7 @@ function NewGameMenu() {
 
   return (
     <div className="new-game-menu">
-      <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
+      <button className="back-button" onClick={() => navigate("/")}>⬅️ Back</button>
       <h1 className="title">New Game</h1>
       <div className="menu-container">
         <div className="menu-item">
