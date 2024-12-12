@@ -513,7 +513,8 @@ def create_new_game():
         'players': {
             'white': None,
             'black': None
-        }
+        },
+        'move_history': []
     }
 
 @app.route('/multiplayer/create', methods=['POST'])
@@ -621,7 +622,7 @@ def move_multiplayer():
     game = games[game_id]
     board = game['board']
     current_turn = 'white' if board.turn == chess.WHITE else 'black'
-    
+
     player_ip = request.remote_addr
     if game['players'][current_turn] != player_ip:
         return jsonify({'error': 'It is not your turn or you are not a player in this game'}), 400
@@ -630,16 +631,18 @@ def move_multiplayer():
         move = chess.Move.from_uci(move_uci)
         if move in board.legal_moves:
             board.push(move)
+            player_color = current_turn.capitalize()  # "White" or "Black"
+            from_square = chess.square_name(move.from_square)
+            to_square = chess.square_name(move.to_square)
+            game['move_history'].append(f"{player_color}: {from_square} to {to_square}")
         else:
             return jsonify({'error': 'Illegal move'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-    # Determine check_square position in case of checkmate
     check_square = None
     if board.is_checkmate():
-        check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
-        print(f"Checkmate detected. Check square: {check_square}")
+        check_square = chess.square_name(board.king(board.turn))
         game['is_complete'] = True 
 
     return jsonify({
@@ -698,7 +701,6 @@ def get_game_state_multiplayer():
     game = games[game_id]
     board = game['board']
 
-    # If checkmate, determine the checking square once for both players
     check_square = None
     if board.is_checkmate():
         checkers = board.checkers()
@@ -712,7 +714,8 @@ def get_game_state_multiplayer():
         'turn': 'white' if board.turn == chess.WHITE else 'black',
         'is_check': board.is_check(),
         'check_square': check_square,
-        'players': game['players']
+        'players': game['players'],
+        'move_history': game['move_history']
     })
 
 @app.route('/multiplayer/legal_moves_multi', methods=['POST'])
