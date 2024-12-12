@@ -514,7 +514,9 @@ def create_new_game():
             'white': None,
             'black': None
         },
-        'move_history': []
+        'move_history': [],
+        'game_name': 'Untitled Game',
+        'theme': 'regular'        
     }
 
 @app.route('/multiplayer/create', methods=['POST'])
@@ -535,14 +537,22 @@ def create_game():
             message:
               type: string
     """
-    game_id = str(uuid.uuid4())[:8]   # Generate a unique game ID
+    data = request.get_json()
+    game_name = data.get('game_name', 'Untitled Game')
+    theme = data.get('theme', 'regular')
+
+    game_id = str(uuid.uuid4())[:8] # Generate a unique game ID
     games[game_id] = create_new_game()  # Create a new game instance
+    games[game_id]['game_name'] = game_name
+    games[game_id]['theme'] = theme
 
     return jsonify({
         'message': 'Game created',
         'game_id': game_id,
         'fen': games[game_id]['board'].fen(),
-        'turn': 'white'
+        'turn': 'white',
+        'game_name': game_name,
+        'theme': theme
     })
 
 @app.route('/multiplayer/join', methods=['POST'])
@@ -715,7 +725,9 @@ def get_game_state_multiplayer():
         'is_check': board.is_check(),
         'check_square': check_square,
         'players': game['players'],
-        'move_history': game['move_history']
+        'move_history': game['move_history'],
+        'game_name': game.get('game_name', 'Untitled Game'),
+        'theme': game.get('theme', 'regular')
     })
 
 @app.route('/multiplayer/legal_moves_multi', methods=['POST'])
@@ -789,7 +801,9 @@ def list_games():
             active_games.append({
                 'game_id': game_id,
                 'players': game['players'],
-                'status': 'waiting' if None in game['players'].values() else 'in-progress'
+                'status': 'waiting' if None in game['players'].values() else 'in-progress',
+                'game_name': game.get('game_name', 'Untitled Game'),
+                'theme': game.get('theme', 'regular')
             })
     return jsonify(active_games)
 

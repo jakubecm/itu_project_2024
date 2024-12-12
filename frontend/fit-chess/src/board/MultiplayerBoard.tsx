@@ -5,7 +5,6 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GameOverModal from '../Effects/GameOverModal';
 import './Board.css'; 
-import Settings from './Settings';
 import Sidebar from './Sidebar';
 
 export const SQUARE_SIZE = '80px';
@@ -19,7 +18,8 @@ interface GameState {
     is_check: boolean;
     material_balance: number;
     check_square?: string;
-    move_history?: string[];  // Added to match backend return
+    move_history?: string[];
+    theme?: string;
 }
 
 interface Players {
@@ -46,10 +46,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
     const [moveHistory, setMoveHistory] = useState<string[]>([]);
     const [players, setPlayers] = useState<Players>({ white: 'White', black: 'Black' });
 
-    const handleThemeChange = (newTheme: string) => {
-        setTheme(newTheme);
-    };
-
     // Fetch game state and check for checkmate/stalemate
     const fetchGameState = useCallback(async () => {
         try {
@@ -60,6 +56,11 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
             // Set moveHistory from the server state
             if (data.move_history) {
                 setMoveHistory(data.move_history);
+            }
+
+            // Setting the theme for the game (both players)
+            if (data.theme) {
+                setTheme(data.theme);
             }
 
             if ((data.is_checkmate || data.is_stalemate) && !showGameOverModal) {
@@ -375,7 +376,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                         handleMove={handleMove} 
                         inCheck={inCheck} 
                         onClick={handleSquareClick}>
-                            
+
                         <Piece type={c} position={sq} handlePick={handlePieceSelection} theme={theme}/>
                     </Square>
                 );
@@ -414,7 +415,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                 </div>
                 <Sidebar moveHistory={moveHistory} onRevert={null} onHint={() => {}} />
             </div>
-            <Settings onThemeChange={handleThemeChange} />
         </div>
     );
 };
