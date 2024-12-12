@@ -3,20 +3,22 @@ import './ServerBrowser.css';
 
 interface Game {
     game_id: string;
-    players: { // Define the players object
+    players: {
         white: string | null;
         black: string | null;
     };
     status: string;
+    game_name: string;
+    theme: string;
 }
 
 interface ServerBrowserProps {
-    serverIp: string;  // Ensure serverIp is passed as a prop
-    onJoin: (gameId: string) => void; // Define the onJoin function
+    serverIp: string;
+    onJoin: (gameId: string) => void;
 }
 
 export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }) => {
-    const [games, setGames] = useState<Game[]>([]); // Initialize games as an empty array
+    const [games, setGames] = useState<Game[]>([]);
 
     const fetchGames = async () => {
         try {
@@ -40,9 +42,12 @@ export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }
                 {games.map((game) => (
                     <li key={game.game_id} className="game-item">
                         <div className="game-info">
-                            <span className="game-id">Game ID: {game.game_id}</span>
+                            <span className="game-id">Name: {game.game_name} (ID: {game.game_id})</span>
                             <span className="players">
                                 Players: White - {game.players.white || 'Open'}, Black - {game.players.black || 'Open'}
+                            </span>
+                            <span className="players">
+                                Theme: {game.theme}
                             </span>
                         </div>
                         <button className="join-button" onClick={() => onJoin(game.game_id)}>Join</button>

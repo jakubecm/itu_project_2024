@@ -520,7 +520,10 @@ def create_new_game():
         'players': {
             'white': None,
             'black': None
-        }
+        },
+        'move_history': [],
+        'game_name': 'Untitled Game',
+        'theme': 'regular'        
     }
 
 @app.route('/multiplayer/create', methods=['POST'])
@@ -541,14 +544,22 @@ def create_game():
             message:
               type: string
     """
-    game_id = str(uuid.uuid4())[:8]   # Generate a unique game ID
+    data = request.get_json()
+    game_name = data.get('game_name', 'Untitled Game')
+    theme = data.get('theme', 'regular')
+
+    game_id = str(uuid.uuid4())[:8] # Generate a unique game ID
     games[game_id] = create_new_game()  # Create a new game instance
+    games[game_id]['game_name'] = game_name
+    games[game_id]['theme'] = theme
 
     return jsonify({
         'message': 'Game created',
         'game_id': game_id,
         'fen': games[game_id]['board'].fen(),
-        'turn': 'white'
+        'turn': 'white',
+        'game_name': game_name,
+        'theme': theme
     })
 
 @app.route('/multiplayer/join', methods=['POST'])
@@ -628,7 +639,7 @@ def move_multiplayer():
     game = games[game_id]
     board = game['board']
     current_turn = 'white' if board.turn == chess.WHITE else 'black'
-    
+
     player_ip = request.remote_addr
     if game['players'][current_turn] != player_ip:
         return jsonify({'error': 'It is not your turn or you are not a player in this game'}), 400
@@ -637,16 +648,18 @@ def move_multiplayer():
         move = chess.Move.from_uci(move_uci)
         if move in board.legal_moves:
             board.push(move)
+            player_color = current_turn.capitalize()  # "White" or "Black"
+            from_square = chess.square_name(move.from_square)
+            to_square = chess.square_name(move.to_square)
+            game['move_history'].append(f"{player_color}: {from_square} to {to_square}")
         else:
             return jsonify({'error': 'Illegal move'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
-    # Determine check_square position in case of checkmate
     check_square = None
     if board.is_checkmate():
-        check_square = chess.square_name(board.king(board.turn))  # Set check_square to the king's position
-        print(f"Checkmate detected. Check square: {check_square}")
+        check_square = chess.square_name(board.king(board.turn))
         game['is_complete'] = True 
 
     return jsonify({
@@ -705,7 +718,6 @@ def get_game_state_multiplayer():
     game = games[game_id]
     board = game['board']
 
-    # If checkmate, determine the checking square once for both players
     check_square = None
     if board.is_checkmate():
         checkers = board.checkers()
@@ -719,7 +731,10 @@ def get_game_state_multiplayer():
         'turn': 'white' if board.turn == chess.WHITE else 'black',
         'is_check': board.is_check(),
         'check_square': check_square,
-        'players': game['players']
+        'players': game['players'],
+        'move_history': game['move_history'],
+        'game_name': game.get('game_name', 'Untitled Game'),
+        'theme': game.get('theme', 'regular')
     })
 
 @app.route('/multiplayer/legal_moves_multi', methods=['POST'])
@@ -793,7 +808,9 @@ def list_games():
             active_games.append({
                 'game_id': game_id,
                 'players': game['players'],
-                'status': 'waiting' if None in game['players'].values() else 'in-progress'
+                'status': 'waiting' if None in game['players'].values() else 'in-progress',
+                'game_name': game.get('game_name', 'Untitled Game'),
+                'theme': game.get('theme', 'regular')
             })
     return jsonify(active_games)
 

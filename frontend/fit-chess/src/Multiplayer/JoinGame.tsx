@@ -6,11 +6,12 @@ interface JoinGameProps {
     gameId: string;
     serverIp: string;
     onLeave: () => void; // Add an onLeave callback prop
+    playerColor?: string | null;
 }
 
-export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave }) => {
-    const [playerColor, setPlayerColor] = useState<string | null>(null);
-    const [hasLeftGame, setHasLeftGame] = useState<boolean>(false); // Track if the player has left the game
+export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave, playerColor: initialColor }) => {
+    const [playerColor, setPlayerColor] = useState<string | null>(initialColor || null);
+    const [hasLeftGame, setHasLeftGame] = useState<boolean>(false);
 
     const joinAsColor = async (color: string) => {
         try {
@@ -78,8 +79,10 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave })
         return (
             <div className='board-container'>
                 <h3>Game ID: {gameId}</h3>
-                <button onClick={() => joinAsColor('white')}>Join as White</button>
-                <button onClick={() => joinAsColor('black')}>Join as Black</button>
+                <div style={{display:'flex', flexDirection:'column', gap:'20px', marginTop:'20px'}}>
+                    <button className="create-button" onClick={() => joinAsColor('white')}>Join as White</button>
+                    <button className="create-button" onClick={() => joinAsColor('black')}>Join as Black</button>
+                </div>
             </div>
         );
     }

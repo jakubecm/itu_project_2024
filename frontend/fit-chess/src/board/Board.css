@@ -73,3 +73,19 @@
 .board-text {
     color: #553737;
 }
+
+.multiplayer-mode .sidebar-buttons:nth-child(1) { /* Revert Move */
+    display: none;
+}
+  
+.multiplayer-mode .sidebar-buttons:nth-child(2) { /* Show Hint */
+    display: none;
+}
+
+.multiplayer-mode .sidebar-buttons:nth-child(3) { /* Restart */
+    display: none;
+}
+
+.multiplayer-mode .sidebar-buttons:nth-child(4) { /* Back to menu */
+    display: none;
+}
