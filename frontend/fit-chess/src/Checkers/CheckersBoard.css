@@ -1,45 +1,49 @@
+/** File: CheckersBoard.css
+  * Author: Norman Babiak (xbabia01)
+  */
+
 .square-dark {
-    background: rgba(99, 77, 77, 0.6);
-  }
+  background: rgba(99, 77, 77, 0.6);
+}
   
-  .square-light {
-    background: #E3D3D3;
-  }
+.square-light {
+  background: #E3D3D3;
+}
   
-  .square-highlighted {
-    background: lightgreen;
-  }
+.square-highlighted {
+  background: lightgreen;
+}
   
-  .square-current {
-    box-shadow: inset 0 0 0 3px darkblue;
-  }
+.square-current {
+  box-shadow: inset 0 0 0 3px darkblue;
+}
 
-  .square-playable {
-    outline: 3px solid rgb(23, 0, 128);
-    outline-offset: -3px;
-  }
+.square-playable {
+  outline: 3px solid rgb(23, 0, 128);
+  outline-offset: -3px;
+}
 
-  .board-container-check {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    width: 100%;
-    background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
+.board-container-check {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
 }
 
 .board-sidebar-container-check {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    gap: 20px; /* Space between the board and sidebar */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  gap: 20px; /* Space between the board and sidebar */
 }
 
 .board-container > div {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .checkers-game-mode .sidebar-buttons:nth-child(1) { /* Revert Move */

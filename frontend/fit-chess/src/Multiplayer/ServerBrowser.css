@@ -1,106 +1,117 @@
+/** File: ServerBrowser.css
+  * Author: Norman Babiak (xbabia01)
+  */
+
 /* Main container for Server Browser */
 .server-browser-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    height: 100vh;
-    text-align: center;
-    padding-top: 20px;
-    background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
-  }
-  
-  /* Server list container with box styling */
-  .server-list-container {
-    width: 80%;
-    max-width: 600px;
-    background-color: #E3D3D3;
-    padding: 20px;
-    border-radius: 15px;
-    border: 2px solid #553737;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: left;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-  
-  /* Game list styling */
-  .game-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Game item styling */
-  .game-item {
-    padding: 15px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #553737;
-    font-size: 1.3em;
-  }
-  
-  .game-info {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .game-id {
-    font-weight: bold;
-    color: #553737;
-    margin-bottom: 5px;
-  }
-  
-  .players {
-    font-size: 1em;
-    color: #333;
-  }
-  
-  /* Join button styling */
-  .join-button {
-    padding: 10px 15px;
-    font-size: 1.4em;
-    font-weight: 600;
-    color: black;
-    background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
-    border: 5px solid black;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, translobby 0.3s ease;
-  }
-  
-  .join-button:hover {
-    transform: scale(1.05);
-  }
-  
-  .join-button:active {
-    background-color: #aaa;
-  }
-  
-  
-  /* Create New Game button positioned below the server list */
-  .create-button {
-    padding: 15px 25px;
-    font-size: 2.5em;
-    font-weight: 700;
-    font-weight: bold;
-    color: black;
-    background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
-    border: 5px solid black;
-    border-radius: 45px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, translobby 0.3s ease;
-  }
-  
-  .create-button:hover {
-    transform: scale(1.05);
-  }
-  
-  .create-button:active {
-    background-color: #aaa;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+  text-align: center;
+  padding-top: 20px;
+  background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
+}
+
+/* Server list container with box styling */
+.server-list-container {
+  width: 80%;
+  max-width: 600px;
+  background-color: #E3D3D3;
+  padding: 20px;
+  border-radius: 15px;
+  border: 2px solid #553737;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: left;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Game list styling */
+.game-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Game item styling */
+.game-item {
+  padding: 15px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #553737;
+  font-size: 1.3em;
+}
+
+.game-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-id {
+  font-weight: bold;
+  color: #553737;
+  margin-bottom: 5px;
+}
+
+.players {
+  font-size: 1em;
+  color: #333;
+}
+
+/* Join button styling */
+.join-button {
+  padding: 5px 20px;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: black;
+  background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
+  border: 5px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, translobby 0.3s ease;
+}
+
+.join-button:hover {
+  transform: scale(1.05);
+}
+
+.join-button:active {
+  background-color: #aaa;
+}
+
+
+/* Create New Game button positioned below the server list */
+.create-button {
+  padding: 5px 20px;
+  font-size: 2em;
+  font-weight: 700;
+  font-weight: bold;
+  color: black;
+  background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
+  border: 5px solid black;
+  border-radius: 45px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, translobby 0.3s ease;
+}
+
+.create-button:hover {
+  transform: scale(1.05);
+}
+
+.create-button:active {
+  background-color: #aaa;
+}
+
+.leave-button {
+  position: relative;
+  margin-top: -50px;
+  top: -180px;
+  z-index: 1;
+}
 
 .create-game-lobby {
   display: flex;

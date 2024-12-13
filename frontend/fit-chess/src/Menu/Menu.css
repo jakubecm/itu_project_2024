@@ -1,3 +1,7 @@
+/** File: Menu.css
+  * Author: Norman Babia (xbabia01)
+  */
+
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Tera&display=swap'); /* Title font import */
 
 .main-menu {
@@ -10,6 +14,7 @@
   text-align: center;
   background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);         /* Background color */
   padding-top: 50px;                                                          /* Move content higher */
+  gap: 10px;                                                                  /* Space between items */
 }
 
 .logo-container {
@@ -31,8 +36,14 @@
   display: flex;
   flex-direction: column;
   gap: 50px;              /* Gap prepared for other buttons */
+  margin: 5px 0;          /* Margin for the buttons */
 }
 
+.main-menu .menu-buttons:nth-of-type(2) {
+  margin-top: -10px; 
+}
+
+/* Button styling */
 button {
   padding: 5px 20px;
   font-size: 2em;
@@ -78,6 +89,7 @@ button:active {
   color: black;
 }
 
+/* Container for the menu items */
 .menu-container {
   display: flex;
   flex-direction: column;
@@ -90,31 +102,19 @@ button:active {
   gap: 30px; /* Space between icon and button */
 }
 
+/* Icons on main menu */
 .main-icon {
   width: 170px;
   height: 170px;
 }
 
+/* Smaller icons on other game menu */
 .icon{
   width: 85px;
   height: 85px;
 }
 
-.main-menu .menu-buttons:nth-of-type(2) {
-  margin-top: -10px; 
-}
-
-.menu-buttons {
-  margin: 5px 0; 
-}
-
-.main-menu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px; 
-}
-
+/* Checkers menu */
 .variant-selector {
   display: flex;
   justify-content: center;
@@ -123,8 +123,8 @@ button:active {
 }
 
 .variant-button {
-  padding: 15px 25px;
-  font-size: 2.5em;
+  padding: 5px 20px;
+  font-size: 2em;
   font-weight: 700;
   color: black;
   background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
@@ -149,6 +149,7 @@ button:active {
   transform: none;
 }
 
+/* When one button is picked, it is disabled */
 .button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
@@ -160,6 +161,7 @@ button:active {
   text-decoration: none;
 }
 
+/* Setup gamemode picked for checkers */
 .custom-settings {
   display: flex;
   flex-direction: column;
@@ -168,7 +170,7 @@ button:active {
 }
 
 .custom-settings label {
-  font-size: 2em;
+  font-size: 1.8em;
   font-weight: 700;
   color: black;
   display: flex;
@@ -177,7 +179,7 @@ button:active {
 }
 
 .custom-settings input[type="number"] {
-  font-size: 1.5em;
+  font-size: 0.8em;
   font-weight: 700;
   color: black;
   background: linear-gradient(40deg, #553737 22%, #E3D3D3 84%);
@@ -195,6 +197,8 @@ button:active {
   transform: scale(1.05);
 }
 
+/* Difficulty for Chess AI */
+/* Author: Milan Jakubec (xjakub41) */
 .difficulty-item {
   align-items: center;
   gap: 20px;

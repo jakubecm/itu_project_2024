@@ -28,11 +28,20 @@
 
 .sidebar-buttons {
     padding: 10px 20px;
-    background-color: #f5f5f5;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+}
+
+.sidebar button {
+    background: #774f4f;
+    border: none;
+    border-radius: 4px;
+    color: black;
+    font-size: 14px;
+    padding: 10px 20px;
+    cursor: pointer;
 }
 
 .sidebar-text {
