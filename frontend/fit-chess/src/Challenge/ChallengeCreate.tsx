@@ -108,27 +108,51 @@ const ChallengeCreate: React.FC = () => {
     ));
   };
 
+  const saveChallenge = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/save_challenge', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fen }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            console.log(`Challenge saved successfully with ID: ${data.challenge_id}`);
+        } else {
+            console.error(`Failed to save challenge: ${data.error}`);
+        }
+    } catch (error) {
+        console.error('Error saving challenge:', error);
+    }
+};
+
+
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="challenge-create">
+        <div className="challenge-create">
+            <div className="pieces-wrapper">
+                <div className="piece-column">{renderPieces(false, 'regular')}</div>
+                <div className="piece-column">{renderPieces(true, 'regular')}</div>
+            </div>
 
-        <div className="pieces-wrapper">
-          <div className="piece-column">{renderPieces(false, 'regular')}</div>
-          <div className="piece-column">{renderPieces(true, 'regular')}</div>
+            <div
+                className="board-wrapper"
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
+                }}
+            >
+                {renderSquares()}
+            </div>
+
+            <button onClick={saveChallenge} className="save-challenge-button">
+                Save Challenge
+            </button>
         </div>
-
-        <div
-          className="board-wrapper"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
-          }}
-        >
-          {renderSquares()}
-        </div>
-
-
-      </div>
     </DndProvider>
   );
 };

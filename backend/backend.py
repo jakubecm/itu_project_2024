@@ -84,6 +84,31 @@ def new_tutorial():
         'turn': 'white'
     })
 
+challenges = {}  # Místo pro ukládání výzev (id -> FEN)
+
+@app.route('/save_challenge', methods=['POST'])
+def save_challenge():
+    """
+    Save a chess challenge
+    """
+    data = request.json
+    challenge_id = str(uuid.uuid4())[:8]  # Unikátní ID
+    fen = data.get('fen')
+
+    if not fen:
+        return jsonify({'error': 'FEN string is required'}), 400
+
+    challenges[challenge_id] = fen
+    return jsonify({'message': 'Challenge saved', 'challenge_id': challenge_id}), 201
+
+@app.route('/get_challenges', methods=['GET'])
+def get_challenges():
+    """
+    Get all saved challenges
+    """
+    return jsonify({'challenges': challenges}), 200
+
+
 @app.route('/move', methods=['POST'])
 def make_move():
     """
@@ -1429,3 +1454,4 @@ def generate_fen_from_setup():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
