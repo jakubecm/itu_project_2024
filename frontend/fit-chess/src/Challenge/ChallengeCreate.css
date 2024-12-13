@@ -1,0 +1,40 @@
+.challenge-create {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+  
+  .pieces-wrapper {
+    display: flex;
+    flex-direction: row;
+    margin-right: 20px;
+  }
+  
+  .piece-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    margin-right: 10px; 
+    gap: 10px; 
+  }
+  
+  .board-wrapper {
+    display: grid;
+    border: 2px solid black;
+  }
+  
+  .square {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .black-square {
+    background-color: #6b5e53;
+  }
+  
+  .white-square {
+    background-color: #e3d3c6;
+  }
+  
