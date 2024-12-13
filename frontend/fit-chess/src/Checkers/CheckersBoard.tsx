@@ -1,3 +1,7 @@
+// File: CheckersBoard.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Checkers board component for the Checkers game.
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Square } from './Square';
@@ -42,7 +46,7 @@ export const CheckersBoard: React.FC = () => {
     try {
       const response = await fetch('http://127.0.0.1:5000/checkers/checkers_state');
       const data = await response.json();
-      setGameState(data);
+      setGameState(data); // Update the game state
 
     } catch (error) {
       console.error('Error fetching game state:', error);
@@ -59,8 +63,9 @@ export const CheckersBoard: React.FC = () => {
       });
   
       const data = await response.json();
-      setGameState(data);
-      setMoveHistory([]);
+      setGameState(data); // Update the game state
+      setMoveHistory([]); // Clear move history for the new game
+
     } catch (error) {
       console.error('Error starting new game:', error);
     }
@@ -86,10 +91,10 @@ export const CheckersBoard: React.FC = () => {
   }, [fenFromState, variant]);
 
   useEffect(() => {
-    if (fenFromState && mode === 'freeplay') {
+    if (fenFromState && mode === 'freeplay') {  // If there is custom fen from custom board setup
       applyCustomFen();
 
-    } else {
+    } else {  // Else, start simple game
       startNewGame();
     }
   }, [startNewGame, fenFromState, mode, applyCustomFen]);
@@ -111,8 +116,8 @@ export const CheckersBoard: React.FC = () => {
       const data = await response.json();
   
       // Construct the legalMovesMap
-      const movesMap: { [toPosition: string]: string } = {};
-      data.legal_moves.forEach((move: string) => {
+      const movesMap: { [toPosition: string]: string } = {};  // Map of legal moves
+      data.legal_moves.forEach((move: string) => {  // Iterate over the legal moves
         const parts = move.split(/[-x]/g).map((p) => p.trim()); // Split and trim whitespace
         const toPosition = parts[1]; // 'to' position is the second part
         movesMap[toPosition] = move;
@@ -120,7 +125,7 @@ export const CheckersBoard: React.FC = () => {
       
       setLegalMoves(Object.keys(movesMap));
       setLegalMovesMap(movesMap);
-      return movesMap; // Return the movesMap
+      return movesMap; // Return the movesMap because of DnD
 
     } catch (error) {
       console.error('Error fetching legal moves:', error);
@@ -156,8 +161,8 @@ export const CheckersBoard: React.FC = () => {
 
   // Handle square click
   const handleSquareClick = async (position: string) => {
-    const board = gameState!.board_map;
-    const piece = board[position];
+    const board = gameState!.board_map; // Current board state
+    const piece = board[position];  // Piece type at the clicked square
   
     // If a piece is selected and the clicked square is a legal move
     if (selectedPiece) {
@@ -206,7 +211,7 @@ export const CheckersBoard: React.FC = () => {
         return;
       }
   
-      setMoveHistory((prevHistory) => [
+      setMoveHistory((prevHistory) => [ // Update move history
         ...prevHistory,
         `${data.turn === 'white' ? 'Black' : 'Red'}: ${movePDN}`,
       ]);
@@ -215,6 +220,8 @@ export const CheckersBoard: React.FC = () => {
       if (data.is_capture && data.continue_capture) {
         setSelectedPiece(toPosition);
         await fetchLegalMoves(toPosition);
+
+        // If AI is enabled, make the next move
         if ((data.turn === 'black') && (data.ai_available) 
             && (variant !== 'frysk') && (mode !== 'freeplay')) {
           setTimeout(() => makeAIMove(), 500);
@@ -224,12 +231,14 @@ export const CheckersBoard: React.FC = () => {
         setSelectedPiece(null);
         setLegalMoves([]);
         setLegalMovesMap({});
+
+        // If AI is enabled, make the next move
         if ((data.turn === 'black') && (data.ai_available) 
             && (variant !== 'frysk') && (mode !== 'freeplay')) {
           setTimeout(() => makeAIMove(), 500);
         }
       }
-      console.log(gameState?.fen);
+
       await fetchGameState();
 
     } catch (error) {
@@ -237,6 +246,7 @@ export const CheckersBoard: React.FC = () => {
     }
   };
 
+  // Make AI move
   const makeAIMove = async () => {
     try {
       const response = await fetch('http://127.0.0.1:5000/checkers/checkers_ai_move', {
@@ -245,18 +255,22 @@ export const CheckersBoard: React.FC = () => {
       });
       const data = await response.json();
 
-      if (response.status === 500) {
+      if (response.status === 500) {  // In case AI refuses to cooperate mid-game
         console.warn('AI not enabled. Skipping AI move.');
         return;
       }
 
-      if (data.error) {
+      if (data.error) { // In case of engine failure (3rd party library)
         console.error('AI move failed:', data.error);
         return;
       }
 
-      setMoveHistory((prevHistory) => [...prevHistory, `AI: ${data.ai_move}`]);
-      await fetchGameState();
+      // Update move history and fetch the new game state
+      setMoveHistory((prevHistory) => [
+        ...prevHistory, 
+      `AI: ${data.ai_move}`]);
+
+      await fetchGameState(); // Update the game state after the move
 
     } catch (error) {
       console.error('Error making AI move:', error);
@@ -282,16 +296,19 @@ export const CheckersBoard: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchGameState();
+    fetchGameState(); // Fetch the game state on component mount
   }, []);
 
 const renderSquares = () => {
+  // Board setup
   const squares: JSX.Element[] = [];
   const columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
   const rows = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
+  // Board mapping 
   const board = gameState?.board_map || {};
 
+  // Check for all squares and assign properties
   for (const row of rows) {
     for (const column of columns) {
       const position = column + row;
@@ -349,8 +366,8 @@ const renderSquares = () => {
             <div className="checkers-game-mode">
               <Sidebar
                 moveHistory={moveHistory}
-                onRevert={null}
-                onHint={null}
+                onRevert={() => {}}
+                onHint={() => {}}
               />
             </div>
         </div>

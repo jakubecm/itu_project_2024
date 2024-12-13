@@ -11,14 +11,14 @@ interface PieceProps {
   type: string; // 'r', 'b', 'R', 'B' for red, black, red king, black king
   position: string; // Position on the board
   handlePick: (position: string) => void; // Function to handle piece selection
-  fetchLegalMoves: (position: string) => Promise<{ [toPosition: string]: string }>;
+  fetchLegalMoves: (position: string) => Promise<{ [toPosition: string]: string }>; // Function to fetch legal moves
 }
 
 export const Piece: React.FC<PieceProps> = ({ type, position, handlePick, fetchLegalMoves }) => {
-  const [{ isDragging }, dragRef] = useDrag(() => ({
+  const [{ isDragging }, dragRef] = useDrag(() => ({  // Drag and drop functionality
     type: 'piece',
     item: { fromPosition: position },
-    collect: (monitor) => ({
+    collect: (monitor) => ({  // Monitor the drag state
       isDragging: monitor.isDragging(),
     }),
   }));

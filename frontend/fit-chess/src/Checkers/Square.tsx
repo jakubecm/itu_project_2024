@@ -1,3 +1,7 @@
+// File: Square.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for a single square on the board
+
 import React from 'react';
 import { Piece } from './Piece';
 import '../board/Board.css';
@@ -14,7 +18,7 @@ interface SquareProps {
   pieceType?: string;
   handleDrop: (fromPosition: string, toPosition: string) => void;
   handlePieceSelection: (position: string) => void;
-  fetchLegalMoves: (position: string) => Promise<{ [toPosition: string]: string }>;
+  fetchLegalMoves: (position: string) => Promise<{ [toPosition: string]: string }>; // Function to fetch legal moves
 }
 
 export const Square: React.FC<SquareProps> = ({
@@ -29,13 +33,14 @@ export const Square: React.FC<SquareProps> = ({
   handlePieceSelection,
   fetchLegalMoves,
 }) => {
-  const dropRef = useDrop(() => ({
+  const dropRef = useDrop(() => ({  // Drop functionality
     accept: 'piece',
     drop: (item: { fromPosition: string }) => {
-      handleDrop(item.fromPosition, position); // Handle piece drop
+      handleDrop(item.fromPosition, position); // Handle piece drop in main board
     },
   }))[1];
 
+  // Assign class names according to properties the square has
   const getClassName = () => {
     let className = isDark ? 'square-dark' : 'square-light';
     if (playable) className += ' square-playable'; // Highlight playable pieces
@@ -55,11 +60,11 @@ export const Square: React.FC<SquareProps> = ({
         position: 'relative',
       }}
     >
-      {pieceType && (
+      {pieceType && ( // If there is a piece at the position, render it
         <Piece
           type={pieceType}
           position={position}
-          handlePick={handlePieceSelection}
+          handlePick={handlePieceSelection} // Pass handlePieceSelection to the piece
           fetchLegalMoves={fetchLegalMoves} // Pass fetchLegalMoves to the piece
         />
       )}

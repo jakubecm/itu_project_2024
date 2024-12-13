@@ -1,3 +1,8 @@
+// File: MultiplayerBoard.tsx
+// Author: Most functions are taken from the original board.tsx file, additional functionality for multiplayer
+//         added by Norman Babiak (xbabia01)
+// Desc: Component for the multiplayer board with preset theme, player colors and game state tracking.
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { Square } from './square';
 import { CapturedPiecesComponent, Piece, PromotionOptions } from './piece';
@@ -412,7 +417,7 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
                         <CapturedPiecesComponent pieces={undefined} material={gameState.material_balance} theme={theme} player='white' />
                     </div>
                 </div>
-                <Sidebar moveHistory={moveHistory} onRevert={null} onHint={() => {}} />
+                <Sidebar moveHistory={moveHistory} onRevert={() => {}} onHint={() => {}} />
             </div>
         </div>
     );

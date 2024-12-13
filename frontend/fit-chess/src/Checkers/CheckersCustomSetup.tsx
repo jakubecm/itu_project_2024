@@ -1,3 +1,7 @@
+// File: CheckersCustomSetup.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for the custom board, where players can choose the pieces to place on the board
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
@@ -51,6 +55,7 @@ export const CheckersCustomSetup: React.FC = () => {
         }
     };
 
+    // Start a basic freeplay with the current board setup
     const handleStartFreeplay = async () => {
         // Collect pieces in a simple array
         const pieces = Object.entries(boardState).map(([position, type]) => ({ position, type }));
@@ -75,6 +80,7 @@ export const CheckersCustomSetup: React.FC = () => {
         });
     };
 
+    // Assign the correct image to a piece type
     const getPieceImage = (type: string) => {
         switch (type) {
             case 'r': return redPiece;
@@ -86,6 +92,7 @@ export const CheckersCustomSetup: React.FC = () => {
     };
 
     const renderSquares = () => {
+        // Square setup and assigning correct layout (Dark or Light)
         const squares: JSX.Element[] = [];
         for (const row of rows) {
             for (const column of columns) {
