@@ -25,6 +25,11 @@ function MainMenu() {
           <button>Checkers</button>
         </Link>
       </div>
+      <div className="menu-buttons">
+        <Link to="/challenge">
+          <button>Challenge</button>
+        </Link>
+      </div>
     </div>
   );
 }
