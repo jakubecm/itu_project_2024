@@ -97,8 +97,9 @@ export const Board: React.FC<unknown> = () => {
         }
     }, [showPromotionOptions]);
 
-    // function that launches when a square is navigated to with keyboard
-    // it updates the selected square
+    // Author: Milan Jakubec (xjakub41)
+    // Function that launches when a square is navigated to with keyboard
+    // It updates the selected square
     const navigateBoard = useCallback((direction: string) => {
         let row = selectedSquare ? parseInt(selectedSquare[1], 10) : 1;
         let col = selectedSquare ? selectedSquare[0].charCodeAt(0) : 'a'.charCodeAt(0);
@@ -111,8 +112,9 @@ export const Board: React.FC<unknown> = () => {
         setSelectedSquare(String.fromCharCode(col) + row);
     }, [selectedSquare]);
     
-    // function for selecting a square with keyboard
-    // based on mode it either selects a piece or a target square for a move
+    // Author: Milan Jakubec (xjakub41)
+    // Function for selecting a square with keyboard
+    // Based on mode it either selects a piece or a target square for a move
     const selectSquare = useCallback(async () => {
         if (!selectedSquare) return;
         
@@ -143,6 +145,7 @@ export const Board: React.FC<unknown> = () => {
         }
     }, [selectedSquare, moveMode, selectedPiece, handleMove]);
 
+    // Author: Milan Jakubec (xjakub41)
     // Keyboard navigation
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -303,6 +306,8 @@ export const Board: React.FC<unknown> = () => {
         fetchLegalMoves(position);
     }
 
+    // Author: Milan Jakubec (xjakub41)
+    // Function for handling square clicks (mouse control for the game)
     const handleSquareClick = useCallback(async (position: string) => {
 
         if (moveMode === 'selectingPiece') {

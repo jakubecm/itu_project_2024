@@ -1,3 +1,7 @@
+// File: DifficultyForm.tsx
+// Author: Milan Jakubec (xjakub41)
+// Desc: Component for creating and editing custom difficulty settings.
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './DifficultyForm.css';

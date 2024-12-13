@@ -1,3 +1,8 @@
+// File: DifficultyList.tsx
+// Author: Milan Jakubec (xjakub41)
+// Desc: Component for displaying a list of custom difficulty settings
+//       and allowing the user to play, edit, or delete them.
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 

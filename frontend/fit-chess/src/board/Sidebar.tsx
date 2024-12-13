@@ -1,3 +1,7 @@
+// File: Sidebar.tsx
+// Author: Milan Jakubec (xjakub41)
+// Desc: Component for the game sidebar with move history and options to revert move, show hint, restart game and go back to menu.
+
 import {useEffect, useRef} from 'react';
 import './Sidebar.css';
 

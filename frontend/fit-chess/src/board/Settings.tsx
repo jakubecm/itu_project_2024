@@ -1,3 +1,6 @@
+// File: Settings.tsx
+// Author: Milan Jakubec (xjakub41)
+// Desc: Component for settings modal
 import { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
