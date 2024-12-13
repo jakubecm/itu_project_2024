@@ -14,17 +14,19 @@ interface Game {
 
 interface ServerBrowserProps {
     serverIp: string;
-    onJoin: (gameId: string) => void;
+    onJoin: (gameId: string) => void;   // Callback to call when the player joins a game
 }
 
 export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }) => {
-    const [games, setGames] = useState<Game[]>([]);
+    const [games, setGames] = useState<Game[]>([]); // State to store the list of games
 
+    // Fetch the list of games
     const fetchGames = async () => {
         try {
             const response = await fetch(`http://${serverIp}:5000/multiplayer/games`);
             const data = await response.json();
             setGames(data);
+
         } catch (error) {
             console.error('Error fetching games:', error);
         }

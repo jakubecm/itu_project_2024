@@ -543,8 +543,8 @@ def create_game():
 
     game_id = str(uuid.uuid4())[:8] # Generate a unique game ID
     games[game_id] = create_new_game()  # Create a new game instance
-    games[game_id]['game_name'] = game_name
-    games[game_id]['theme'] = theme
+    games[game_id]['game_name'] = game_name # Set the game name
+    games[game_id]['theme'] = theme # Set the theme
 
     return jsonify({
         'message': 'Game created',
@@ -629,13 +629,14 @@ def move_multiplayer():
     if game_id not in games:
         return jsonify({'error': 'Game ID not found'}), 400
 
+    # Get the game and board from the global games dictionary
     game = games[game_id]
     board = game['board']
     current_turn = 'white' if board.turn == chess.WHITE else 'black'
 
     player_ip = request.remote_addr
     if game['players'][current_turn] != player_ip:
-        return jsonify({'error': 'It is not your turn or you are not a player in this game'}), 400
+        return jsonify({'error': 'It is not your turn'}), 400
 
     try:
         move = chess.Move.from_uci(move_uci)
@@ -645,11 +646,14 @@ def move_multiplayer():
             from_square = chess.square_name(move.from_square)
             to_square = chess.square_name(move.to_square)
             game['move_history'].append(f"{player_color}: {from_square} to {to_square}")
+
         else:
             return jsonify({'error': 'Illegal move'}), 400
+        
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+    # Determine check_square position in case of checkmate
     check_square = None
     if board.is_checkmate():
         check_square = chess.square_name(board.king(board.turn))
@@ -759,35 +763,31 @@ def legal_moves_multi():
                 description: The legal move in UCI format (e.g., "e2e4")
     """
     data = request.get_json()
-    print("Received data:", data)  # Log the received data to check if it contains both position and game_id
     game_id = data.get('game_id')
     position = data.get('position')
 
     if not game_id or not position:
-      print("Missing game_id or position")  # Log if either is missing
       return jsonify({'error': 'Missing game_id or position'}), 400
 
-        # Check if the game ID exists
+    # Check if the game ID exists
     if game_id not in games:
-      print("Game ID not found")  # Log if game_id is invalid
       return jsonify({'error': 'Game ID not found'}), 400
 
-        # Get the game and board
+    # Get the game and board
     game = games[game_id]
     board = game['board']
 
-        # Convert the position to a square (e.g., "e2" -> chess.E2)
+    # Convert the position to a square ("e2" -> chess.E2)
     try:
       square = chess.parse_square(position)
+
     except ValueError:
-      print("Invalid position")  # Log if the position is invalid
       return jsonify({'error': 'Invalid position'}), 400
 
-        # Find all legal moves for the piece at the given square
+    # Find all legal moves for the piece at the given square
     legal_moves = [
       chess.square_name(move.to_square) for move in board.legal_moves if move.from_square == square
     ]
-    print("Legal Moves:", legal_moves)  # Log the legal moves found
 
     return jsonify({
       'legal_moves': legal_moves
@@ -796,6 +796,7 @@ def legal_moves_multi():
 @app.route('/multiplayer/games', methods=['GET'])
 def list_games():
     active_games = []
+
     for game_id, game in games.items():
         if not game['board'].is_game_over():  # Only show active games
             active_games.append({
@@ -984,7 +985,6 @@ def checkers_new_game():
     board_map = parse_checkers_fen(checkersBoard.fen)
 
     return jsonify({
-        'message': f'New {variant} game started with {piece_count if piece_count else "default"} pieces and {king_count} kings',
         'fen': checkersBoard.fen,
         'turn': 'white' if checkersBoard.turn == WHITE else 'black',
         'board_map': board_map
@@ -1005,7 +1005,7 @@ def generate_custom_fen(piece_count, king_count=0, variant="standard"):
     black_positions = black_starts[:piece_count]
     white_positions = white_starts[:piece_count]
 
-    # Ensure king_count is not more than piece_count
+    # Ensure king_count is not more than piece_count (should be capped by FE too)
     king_count = min(king_count, piece_count)
 
     # Split pieces into kings and men
@@ -1041,8 +1041,7 @@ def generate_custom_fen(piece_count, king_count=0, variant="standard"):
     white_fen = format_pieces('W', white_kings, white_men)
     black_fen = format_pieces('B', black_kings, black_men)
 
-    fen = f"W:{white_fen}:{black_fen}"
-    print(f"Generated custom FEN: {fen}")
+    fen = f"W:{white_fen}:{black_fen}" # Combine the FEN parts
     return fen
 
 def parse_checkers_fen(fen):
@@ -1089,11 +1088,11 @@ def parse_checkers_fen(fen):
 
     return board_map
 
-# TODO REWORK OF DIRS
 def initialize_engine():
     """
     Initialize the Scan engine if all necessary files exist in the backend directory.
     """
+    # All scan.exe, scan.ini and data folder should be in backend file to work!
     backend_dir = os.path.dirname(os.path.abspath(__file__))  # Get the backend directory
     scan_exe = os.path.join(backend_dir, "scan.exe")
     scan_ini = os.path.join(backend_dir, "scan.ini")
@@ -1103,9 +1102,11 @@ def initialize_engine():
     if not os.path.exists(scan_exe):
         print("Warning: scan.exe not found in the backend directory. Skipping engine initialization.")
         return None
+    
     if not os.path.exists(scan_ini):
         print("Warning: scan.ini not found in the backend directory. Skipping engine initialization.")
         return None
+    
     if not os.path.exists(data_dir):
         print("Warning: data directory not found in the backend directory. Skipping engine initialization.")
         return None
@@ -1114,7 +1115,6 @@ def initialize_engine():
         os.chdir(backend_dir)  # Set working directory to backend folder
         engine = HubEngine([r"scan.exe", "hub"])
         engine.init()
-        print("Scan engine initialized successfully.")
         return engine
     
     except Exception as e:

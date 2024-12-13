@@ -5,13 +5,13 @@ import '../board/Board.css';
 interface JoinGameProps {
     gameId: string;
     serverIp: string;
-    onLeave: () => void; // Add an onLeave callback prop
+    onLeave: () => void; // Callback to call when the player leaves the game
     playerColor?: string | null;
 }
 
 export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave, playerColor: initialColor }) => {
-    const [playerColor, setPlayerColor] = useState<string | null>(initialColor || null);
-    const [hasLeftGame, setHasLeftGame] = useState<boolean>(false);
+    const [playerColor, setPlayerColor] = useState<string | null>(initialColor || null);    // Player color state
+    const [hasLeftGame, setHasLeftGame] = useState<boolean>(false); // Flag to indicate if the player has left the game
 
     const joinAsColor = async (color: string) => {
         try {
@@ -23,6 +23,12 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave, p
                 body: JSON.stringify({ game_id: gameId, player: color }),
             });
             const data = await response.json();
+
+            if (data.error) {
+                console.error(data.error); // Log the error message
+                return;
+            }
+            
             setPlayerColor(color); // Set the player color
 
         } catch (error) {

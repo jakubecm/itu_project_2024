@@ -14,7 +14,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
     const [theme, setTheme] = useState('regular');
     const [color, setColor] = useState<'white' | 'black'>('white');
     const [themes, setThemes] = useState<string[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false); // To manage submission state
+    const [isSubmitting, setIsSubmitting] = useState(false); // Flag to indicate if the form is submitting
 
     // Fetch themes for the dropdown
     useEffect(() => {
@@ -67,7 +67,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
             const createData = await createResponse.json();
             const gameId = createData.game_id;
 
-            // Join the game
+            // Join the game right after creating it
             const joinResponse = await fetch(`http://${serverIp}:5000/multiplayer/join`, {
                 method: 'POST',
                 headers: {
@@ -124,7 +124,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
                                 { /* Capitalize the first letter */ }
                                 {t.charAt(0).toUpperCase() + t.slice(1)}
                             </option>
-                        )) : <option value="regular">Regular</option>}
+                        )) : <option value="regular">Regular</option>} {/* Default theme */}
                     </select>
                 </label>
 

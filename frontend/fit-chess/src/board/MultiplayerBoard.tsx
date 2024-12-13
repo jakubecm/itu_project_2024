@@ -34,14 +34,14 @@ interface MultiplayerBoardProps {
 }
 
 export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, playerColor, serverIp }) => {
-    const [gameState, setGameState] = useState<GameState | null>(null);
-    const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-    const [legalMoves, setLegalMoves] = useState<string[]>([]);
+    const [gameState, setGameState] = useState<GameState | null>(null); // Track the game state
+    const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Track the selected piece
+    const [legalMoves, setLegalMoves] = useState<string[]>([]); // Track legal moves for the selected piece
     const [promotionMove, setPromotionMove] = useState<{ fromSquare: string; toSquare: string } | null>(null);
     const [showPromotionOptions, setShowPromotionOptions] = useState(false);
     const [showGameOverModal, setShowGameOverModal] = useState(false);  // Track if the modal was closed
-    const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
-    const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece");
+    const [selectedSquare, setSelectedSquare] = useState<string | null>(null); // Track the selected square for keyboard navigation
+    const [moveMode, setMoveMode] = useState<"selectingPiece" | "selectingTarget">("selectingPiece"); // Track the current move mode for keyboard navigation
     const [theme, setTheme] = useState<string>('regular');
     const [moveHistory, setMoveHistory] = useState<string[]>([]);
     const [players, setPlayers] = useState<Players>({ white: 'White', black: 'Black' });
@@ -53,7 +53,6 @@ export const MultiplayerBoard: React.FC<MultiplayerBoardProps> = ({ gameId, play
             const data = await response.json();
             setGameState(data);
 
-            // Set moveHistory from the server state
             if (data.move_history) {
                 setMoveHistory(data.move_history);
             }
