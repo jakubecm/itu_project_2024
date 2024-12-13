@@ -1,3 +1,7 @@
+// File: CheckersGameMenu.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for the checkers game menu, where the player can choose the game mode and variant
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import './Menu.css';
@@ -5,13 +9,15 @@ import chessIcon from '../assets/menu-icon.png';
 
 function CheckersGameMenu() {
   const navigate = useNavigate();
-  const [selectedVariant, setSelectedVariant] = useState('standard');
-  const [pieceCount, setPieceCount] = useState(20);
-  const [kingCount, setKingCount] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState('standard'); // State to store the selected variant
+  const [pieceCount, setPieceCount] = useState(20); // State to store the number of pieces per side
+  const [kingCount, setKingCount] = useState(0);  // State to store the number of kings per side
 
-  const handleVariantChange = (variant) => {
+  // Function to handle variant change
+  const handleVariantChange = (variant: 'standard' | 'frysk' | 'custom') => {
     setSelectedVariant(variant);
 
+    // If its not setup mode, basic is 20 pieces and 0 kings
     if (variant !== 'custom') {
       setPieceCount(20);
       setKingCount(0);
@@ -48,6 +54,7 @@ function CheckersGameMenu() {
         </button>
       </div>
 
+      {/* Settings for the Setup mode */}
       {selectedVariant === 'custom' && (
         <div className="custom-settings">
           <label>
@@ -82,7 +89,7 @@ function CheckersGameMenu() {
             className={selectedVariant === 'frysk' ? 'disabled-link' : ''}
           >
             <button
-              className="button"
+              className="button-menu"
               disabled={selectedVariant === 'frysk'}
             >
               Player vs AI
@@ -95,7 +102,7 @@ function CheckersGameMenu() {
             to="/checkers" 
             state={{ variant: selectedVariant, mode: 'freeplay', piece_count: pieceCount, king_count: kingCount }}
           >
-            <button className="button">
+            <button className="button-menu">
               Freeplay
             </button>
           </Link>
@@ -106,7 +113,7 @@ function CheckersGameMenu() {
             to="/checkers/custom-setup"
             state={{ variant: selectedVariant }}
           >
-            <button className="button">
+            <button className="button-menu">
               Custom Board
             </button>
           </Link>

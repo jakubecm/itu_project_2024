@@ -1,3 +1,7 @@
+// File: MainMenu.tsx
+// Author: Norman Babiak (xbabia01), (some links added by Jiri Tesar (xtesar44))
+// Desc: Main menu component for the application
+
 import { Link } from 'react-router-dom';
 import './Menu.css';
 import chessIcon from '../assets/menu-icon.png';

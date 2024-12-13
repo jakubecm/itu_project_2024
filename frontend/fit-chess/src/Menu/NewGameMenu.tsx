@@ -1,3 +1,7 @@
+// File: NewGameMenu.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for the new game menu, where the player can choose LAN or SP for chess
+
 import { Link, useNavigate } from 'react-router-dom';
 import './Menu.css';
 import chessIcon from '../assets/menu-icon.png';

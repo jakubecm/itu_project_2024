@@ -1,3 +1,7 @@
+// File: MultiplayerGame.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for the multiplayer game create and to show the server browser
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ServerBrowser } from './ServerBrowser';
@@ -9,6 +13,7 @@ interface CreateGameLobbyProps {
     onGameCreated: (gameId: string, playerColor: string) => void;
 }
 
+// Component for creating a game after clicking the "Create New Game" button
 const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreated }) => {
     const [gameName, setGameName] = useState('');
     const [theme, setTheme] = useState('regular');
@@ -65,7 +70,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
             }
 
             const createData = await createResponse.json();
-            const gameId = createData.game_id;
+            const gameId = createData.game_id;  // Get the game ID for the join request
 
             // Join the game right after creating it
             const joinResponse = await fetch(`http://${serverIp}:5000/multiplayer/join`, {
@@ -91,7 +96,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
             console.error('Failed to create or join game:', e);
 
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false); // Reset the submitting flag
         }
     };
 
@@ -166,6 +171,7 @@ const CreateGamelobby: React.FC<CreateGameLobbyProps> = ({ serverIp, onGameCreat
     );
 }
 
+// Main component for the multiplayer game
 export const MultiplayerGame: React.FC = () => {
     const [gameId, setGameId] = useState<string | null>(null); // Track the game ID
     const [playerColor, setPlayerColor] = useState<string | null>(null);

@@ -1,3 +1,7 @@
+// File: ServerBrowser.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for the server browser, showing the list of games available to join
+
 import React, { useEffect, useState } from 'react';
 import './ServerBrowser.css';
 
@@ -32,6 +36,7 @@ export const ServerBrowser: React.FC<ServerBrowserProps> = ({ serverIp, onJoin }
         }
     };
 
+    // Fetch games on component mount and every 5 seconds
     useEffect(() => {
         fetchGames();
         const interval = setInterval(fetchGames, 5000);

@@ -1,6 +1,11 @@
+// File: JoinGame.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Component for joining a multiplayer game from server browser
+
 import React, { useState, useEffect } from 'react';
 import { MultiplayerBoard } from '../board/MultiplayerBoard';
 import '../board/Board.css';
+import './ServerBrowser.css';
 
 interface JoinGameProps {
     gameId: string;
@@ -13,6 +18,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave, p
     const [playerColor, setPlayerColor] = useState<string | null>(initialColor || null);    // Player color state
     const [hasLeftGame, setHasLeftGame] = useState<boolean>(false); // Flag to indicate if the player has left the game
 
+    // Function to join the game as a color
     const joinAsColor = async (color: string) => {
         try {
             const response = await fetch(`http://${serverIp}:5000/multiplayer/join`, {
@@ -98,7 +104,7 @@ export const JoinGame: React.FC<JoinGameProps> = ({ gameId, serverIp, onLeave, p
         <div className='board-container'>
             <h3>Playing as {playerColor}</h3>
             <MultiplayerBoard gameId={gameId} playerColor={playerColor} serverIp={serverIp} />
-            <button onClick={leaveGame} style={{ marginTop: '10px' }}>Leave Game</button>
+            <button onClick={leaveGame} className="leave-button">Leave Game</button>
         </div>
     );
 };
