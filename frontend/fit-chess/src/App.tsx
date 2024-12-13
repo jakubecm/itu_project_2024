@@ -9,6 +9,11 @@ import { TutorialBoard } from './Tutorial/Tutorial1';
 import { CheckersBoard } from './Checkers/CheckersBoard';
 import CheckersGameMenu from './Menu/CheckersGameMenu';
 import { CheckersCustomSetup } from './Checkers/CheckersCustomSetup';
+import CustomDifficultiesMenu from './Menu/DifficultyList';
+import DifficultyForm from './Menu/DifficultyForm';
+import ChallengeMenu from './Challenge/ChallengeMenu';
+import ChallengeCreate from './Challenge/ChallengeCreate';
+
 
 function App() {
   return (
@@ -26,6 +31,11 @@ function App() {
           <Route path="/checkers/new-game" element={< CheckersGameMenu />} />
           <Route path="/checkers" element={<CheckersBoard />} />
           <Route path="/checkers/custom-setup" element={<CheckersCustomSetup />} />
+          <Route path="/difficulty-list" element={<CustomDifficultiesMenu />} />
+          <Route path="/difficulty-list/create" element={<DifficultyForm />} />
+          <Route path="/difficulty-list/edit/:level" element={<DifficultyForm />} />
+          <Route path="/challenge" element={<ChallengeMenu />} />
+          <Route path="/challenge/create" element={<ChallengeCreate/>} />
         </Routes>
       </div>
     </Router>

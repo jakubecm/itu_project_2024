@@ -7,10 +7,10 @@ function AIGameMenu() {
 
   return (
     <div className="new-game-menu">
-      <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
+      <button className="back-button" onClick={() => navigate("/new-game")}>⬅️ Back</button>
       <h1 className="title">Choose difficulty</h1>
       <div className="menu-container">
-      <div className="menu-item">
+        <div className="menu-item">
           <img src={chessIcon} alt="Chess icon" className="icon" />
           <Link to="/board/beginner">
             <button className="button">Beginner</button>
@@ -20,6 +20,12 @@ function AIGameMenu() {
           <img src={chessIcon} alt="Chess icon" className="icon" />
           <Link to="/board/intermediate">
             <button className="button">Intermediate</button>
+          </Link>
+        </div>
+        <div className="menu-item">
+          <img src={chessIcon} alt="Chess icon" className="icon" />
+          <Link to="/difficulty-list">
+            <button className="button">Custom</button>
           </Link>
         </div>
         <div className="menu-item">

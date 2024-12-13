@@ -54,14 +54,6 @@ export const Board: React.FC<unknown> = () => {
 
     const difficultyLevel = (difficulty as Difficulty) || 'none';
 
-    const difficultySettings: Record<Difficulty, { skillLevel: number; depth: number }> = {
-      beginner: { skillLevel: 1, depth: 2 },
-      intermediate: { skillLevel: 10, depth: 5 },
-      none: { skillLevel: 0, depth: 0 },
-    };
-  
-    const settings = difficultySettings[difficultyLevel];
-    
     const callAIMove = async () => {
         try {
           const response = await fetch('http://127.0.0.1:5000/ai_move', {
@@ -69,7 +61,7 @@ export const Board: React.FC<unknown> = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ skill_level: settings.skillLevel, depth: settings.depth  }),
+            body: JSON.stringify({ level: difficultyLevel}),
           });
     
           if (!response.ok) {

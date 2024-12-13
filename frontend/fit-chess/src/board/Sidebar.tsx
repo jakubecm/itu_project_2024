@@ -1,9 +1,15 @@
 import {useEffect, useRef} from 'react';
-import './Sidebar.css';  // Assume you create a CSS file for styling
+import './Sidebar.css';
 
-const Sidebar = ({ moveHistory, onRevert, onHint }) => {
+interface SidebarProps {
+    moveHistory: string[];
+    onRevert: () => void;
+    onHint: () => void;
+}
 
-    const endOfListRef = useRef(null);
+const Sidebar = ({ moveHistory, onRevert, onHint }: SidebarProps) => {
+
+    const endOfListRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         // Scroll the last element into view

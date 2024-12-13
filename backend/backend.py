@@ -5,12 +5,15 @@ import chess.engine
 from draughts import Board, Move, WHITE, BLACK
 from draughts.engine import HubEngine, Limit
 from flasgger import Swagger
-from flask import Flask
 from flask_cors import CORS
 import uuid
 import socket
 from collections import Counter
 import re
+
+STOCKFISH_PATH = "C:\\stockfish\\stockfish-windows-x86-64-avx2.exe"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+THEMES_DIRECTORY = os.path.join(BASE_DIR, 'themes')
 
 app = Flask(__name__)
 CORS(app)  # This will allow all domains to make requests
@@ -22,14 +25,12 @@ board = chess.Board()
 move_history = []
 
 difficulties = {
-    "beginner": {"skill_level": 1, "depth": 2},
-    "intermediate": {"skill_level": 10, "depth": 5},
-    "none": {"skill_level": 0, "depth": 0},
+    "beginner": {"Depth": 3, "Move Overhead": 100, "Skill Level": 5, "UCI_LimitStrength": True, "UCI_Elo": 1320},
+    "intermediate": {"Depth": 6, "Move Overhead": 100, "Skill Level": 15, "UCI_LimitStrength": True, "UCI_Elo": 2000},
+    "none": {"Skill Level": 0, "Depth": 0},
+    "random1": {"Depth": 6, "Move Overhead": 100, "Skill Level": 20, "UCI_LimitStrength": False, "UCI_Elo": 2500},
 }
 
-STOCKFISH_PATH = "C:\stockfish\stockfish-windows-x86-64-avx2.exe"
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-THEMES_DIRECTORY = os.path.join(BASE_DIR, 'themes')
 
 @app.route('/new_game', methods=['GET'])
 def new_game():
@@ -303,13 +304,19 @@ def ai_move():
     if level not in difficulties:
         return jsonify({'error': 'Invalid difficulty level'}), 400
     
-    skill_level = difficulties[level].get('skill_level', 0)
-    depth = difficulties[level].get('depth', 0)
+    depth = difficulties[level].get('Depth', 3)
+    move_overhead = difficulties[level].get('Move Overhead', 100)
+    skill_level = difficulties[level].get('Skill Level', 0)
+    uci_limit_strength = difficulties[level].get('UCI_LimitStrength', False)
+    uci_elo = difficulties[level].get('UCI_Elo', 0)
 
     try:
         with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
             # Configure Stockfish with provided skill level
             engine.configure({"Skill Level": skill_level})
+            engine.configure({"Move Overhead": move_overhead})
+            engine.configure({"UCI_LimitStrength": uci_limit_strength})
+            engine.configure({"UCI_Elo": uci_elo})
             
             # Generate the move with specified depth
             limit = chess.engine.Limit(depth=depth)
@@ -899,9 +906,19 @@ def create_difficulty():
 
 @app.route('/difficulty/list', methods=['GET'])
 def list_difficulties():
-    return jsonify(difficulties)
+    # Remove predefined difficulty levels to list only custom ones
+    custom_difficulties = {k: v for k, v in difficulties.items() if k not in ['beginner', 'intermediate', 'none']}
+    return jsonify(custom_difficulties)
 
-@app.route('/difficulty/edit', methods=['POST'])
+@app.route('/difficulty/get', methods=['GET'])
+def get_difficulty():
+    level = request.args.get('level')
+    if level not in difficulties:
+      return jsonify({'error': 'Difficulty not found'}), 404
+
+    return jsonify({'level': level, 'settings': difficulties[level]}), 200
+
+@app.route('/difficulty/update', methods=['POST'])
 def edit_difficulty():
     data = request.get_json()
     level = data.get('level')

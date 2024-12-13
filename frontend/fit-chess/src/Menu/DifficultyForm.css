@@ -1,0 +1,42 @@
+.form-group {
+    display: flex; /* Display form groups in a row */
+    flex-direction: column; /* Stack form elements vertically */
+    align-items: center; /* Center form elements */
+    margin-bottom: 20px; /* Adds space between form groups */
+}
+
+.form-group input {
+    font-size: 16px; /* Set font size for inputs */
+    width: 300px;
+    padding: 10px; /* Add padding to inputs */
+    border: 1px solid black; /* Add a border to inputs */
+    border-radius: 5px; /* Round the corners of inputs */
+    margin-top: 5px; /* Space above the input */
+}
+
+.form-group label {
+    font-size: 20px; /* Larger font for setting names */
+    font-weight: bold; /* Make the label bold */
+    color: black; /* Set text color to black */
+    display: block; /* Ensure label is on its own line */
+    margin-bottom: 5px; /* Space between label and inputs */
+}
+
+.form-group input[type='checkbox'] {
+    transform: scale(2.5);
+}
+
+
+.setting-description {
+    font-size: 12px; /* Smaller font for descriptions */
+    font-style: italic; /* Make the description text italic */
+    color: black; /* Lighter text color for descriptions */
+    margin-top: 10px; /* Space above the description */
+}
+
+.title {
+    font-family: 'Lexend Tera', sans-serif;
+    font-size: 3em;  /* Large title */
+    font-weight: bold;
+    color: #000;
+  }
