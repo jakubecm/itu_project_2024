@@ -91,7 +91,7 @@ export const CheckersBoard: React.FC = () => {
   }, [fenFromState, variant]);
 
   useEffect(() => {
-    if (fenFromState && mode === 'freeplay') {  // If there is custom fen from custom board setup
+    if (fenFromState) {  // If there is custom fen from custom board setup
       applyCustomFen();
 
     } else {  // Else, start simple game
