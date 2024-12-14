@@ -80,6 +80,30 @@ export const CheckersCustomSetup: React.FC = () => {
         });
     };
 
+    // Start a game against AI with the current board setup
+    const handleStartPlayerVsAI = async () => {
+        const pieces = Object.entries(boardState).map(([position, type]) => ({ position, type }));
+
+        // Send the setup to the backend for FEN generation
+        const response = await fetch('http://127.0.0.1:5000/checkers/generate_fen_from_setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pieces, variant }),
+        });
+
+        const data = await response.json();
+        const fen = data.fen;
+
+        // Navigate to the Player vs AI game with the generated FEN
+        navigate('/checkers', {
+            state: {
+                variant,
+                mode: 'player-vs-ai',
+                fen: fen,
+            },
+        });
+    };
+
     // Assign the correct image to a piece type
     const getPieceImage = (type: string) => {
         switch (type) {
@@ -157,6 +181,7 @@ export const CheckersCustomSetup: React.FC = () => {
                 ❌ Remove Pieces
             </div>
             <button onClick={handleStartFreeplay}>Start Freeplay</button>
+            <button onClick={handleStartPlayerVsAI}>Start Player vs AI</button>
         </div>
 
         <DndProvider backend={HTML5Backend}>
