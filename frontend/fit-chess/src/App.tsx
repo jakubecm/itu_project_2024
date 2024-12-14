@@ -36,6 +36,7 @@ function App() {
           <Route path="/difficulty-list/edit/:level" element={<DifficultyForm />} />
           <Route path="/challenge" element={<ChallengeMenu />} />
           <Route path="/challenge/create" element={<ChallengeCreate/>} />
+          <Route path="/challenge/edit/:id" element={<ChallengeCreate />} />
         </Routes>
       </div>
     </Router>
