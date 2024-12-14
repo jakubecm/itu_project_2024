@@ -1,3 +1,9 @@
+// File: square.tsx
+// Authors: xracek12, xjakub41
+// Desc: Definition of the chess Square component with some controlls logic
+// xracek12: Component definition, drag and drop logic
+// xjakub41: support for keyboard and click controlls
+
 import { useDrop } from 'react-dnd';
 import { SQUARE_SIZE } from './board';
 import { useState } from 'react';

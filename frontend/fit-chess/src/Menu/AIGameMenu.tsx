@@ -1,3 +1,7 @@
+// File: AIGameMenu.tsx
+// Authors: xracek12
+// Desc: Component for AI game menu
+
 import { Link, useNavigate } from 'react-router-dom';
 import './Menu.css';
 import chessIcon from '../assets/menu-icon.png';
