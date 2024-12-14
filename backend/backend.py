@@ -84,21 +84,22 @@ def new_tutorial():
         'turn': 'white'
     })
 
-challenges = {}  # Místo pro ukládání výzev (id -> FEN)
+challenges = {}
 
 @app.route('/save_challenge', methods=['POST'])
 def save_challenge():
     """
-    Save a chess challenge
+    Save a chess challenge with name and FEN string
     """
     data = request.json
-    challenge_id = str(uuid.uuid4())[:8]  # Unikátní ID
+    challenge_id = str(uuid.uuid4())[:8] 
     fen = data.get('fen')
+    name = data.get('name', 'Untitled Challenge')
 
     if not fen:
         return jsonify({'error': 'FEN string is required'}), 400
 
-    challenges[challenge_id] = fen
+    challenges[challenge_id] = {'fen': fen, 'name': name}
     return jsonify({'message': 'Challenge saved', 'challenge_id': challenge_id}), 201
 
 @app.route('/get_challenges', methods=['GET'])
@@ -107,6 +108,72 @@ def get_challenges():
     Get all saved challenges
     """
     return jsonify({'challenges': challenges}), 200
+
+@app.route('/delete_challenge/<challenge_id>', methods=['DELETE'])
+def delete_challenge(challenge_id):
+    """
+    Delete a chess challenge by ID
+    """
+    if challenge_id in challenges:
+        del challenges[challenge_id]
+        return jsonify({'message': f'Challenge {challenge_id} deleted'}), 200
+    else:
+        return jsonify({'error': f'Challenge {challenge_id} not found'}), 404
+
+
+@app.route('/update_board', methods=['POST'])
+def update_board():
+    """
+    Uodate the board
+    """
+    data = request.json
+    fen = data.get('fen')
+
+    if not fen:
+        return jsonify({'error': 'FEN string is required'}), 400
+
+    global board
+    try:
+        board.set_fen(fen)
+        return jsonify({'message': 'Board updated successfully'}), 200
+    except ValueError:
+        return jsonify({'error': 'Invalid FEN string'}), 400
+    
+@app.route('/get_updated_board', methods=['GET'])
+def get_updated_board():
+    """
+    Get the updated board
+    """
+    global board
+    return jsonify({'fen': board.fen()}), 200
+
+@app.route('/get_challenge/<challenge_id>', methods=['GET'])
+def get_challenge(challenge_id):
+    """
+    Get details of a specific challenge by ID
+    """
+    challenge = challenges.get(challenge_id)
+    if not challenge:
+        return jsonify({'error': 'Challenge not found'}), 404
+    return jsonify({'challenge': challenge}), 200
+
+@app.route('/update_challenge/<challenge_id>', methods=['PUT'])
+def update_challenge(challenge_id):
+    """
+    Update a chess challenge with the new name and FEN string
+    """
+    data = request.json
+    name = data.get('name')
+    fen = data.get('fen')
+
+    if not fen:
+        return jsonify({'error': 'FEN string is required'}), 400
+
+    if challenge_id not in challenges:
+        return jsonify({'error': 'Challenge not found'}), 404
+
+    challenges[challenge_id] = {'fen': fen, 'name': name}
+    return jsonify({'message': 'Challenge updated', 'challenge_id': challenge_id}), 200
 
 
 @app.route('/move', methods=['POST'])
