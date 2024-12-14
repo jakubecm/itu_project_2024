@@ -95,6 +95,12 @@ const ChallengeCreate: React.FC = () => {
     }
   };
 
+  const resetBoard = async () => {
+    const initialFen = '8/8/8/8/8/8/8/8'; 
+    setFen(initialFen);  
+    await sendBoardStateToBackend(initialFen);  
+  };
+  
 
   const renderSquares = () => {
     const pieces = fenToPieces(fen);
@@ -203,6 +209,10 @@ const ChallengeCreate: React.FC = () => {
         <button onClick={saveChallenge} className="save-challenge-button">
           {id ? 'Update Challenge' : 'Save Challenge'}
         </button>
+        <button onClick={resetBoard} className="reset-board-button">
+          Reset Board
+        </button>
+
       </div>
     </DndProvider>
   );
