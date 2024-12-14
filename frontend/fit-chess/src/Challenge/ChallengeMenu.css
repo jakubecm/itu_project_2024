@@ -1,0 +1,131 @@
+.challenge-menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 20px;
+}
+
+.challenge-menu-container .back-button {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.challenge-menu-container .back-button:hover {
+    background-color: #0056b3;
+}
+
+.challenge-menu-container .title {
+    text-align: center;
+    width: 100%;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.challenge-menu-container .menu-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.challenge-menu-container .menu-left {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.challenge-menu-container .create-challenge-button {
+    padding: 10px 15px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.challenge-menu-container .create-challenge-button:hover {
+    background-color: #218838;
+}
+
+.challenge-menu-container .menu-center {
+    flex: 2;
+    text-align: center;
+}
+
+.challenge-menu-container .challenge-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.challenge-menu-container .challenge-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin: 10px auto;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    max-width: 500px;
+}
+
+.challenge-menu-container .challenge-info {
+    flex: 2;
+    text-align: left;
+}
+
+.challenge-menu-container .challenge-name {
+    font-size: 18px;
+}
+
+.challenge-menu-container .challenge-buttons {
+    flex: 1;
+    display: flex;
+    justify-content: space-around;
+}
+
+.challenge-menu-container .play-button,
+.challenge-menu-container .edit-button,
+.challenge-menu-container .delete-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.challenge-menu-container .play-button {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.challenge-menu-container .play-button:hover {
+    background-color: #138496;
+}
+
+.challenge-menu-container .edit-button {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.challenge-menu-container .edit-button:hover {
+    background-color: #e0a800;
+}
+
+.challenge-menu-container .delete-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.challenge-menu-container .delete-button:hover {
+    background-color: #c82333;
+}

@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';  
 import './ChallengeCreate.css';
 import { Piece } from '../board/piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Square } from '../board/square';
+import { useParams, useNavigate } from 'react-router-dom';  
 
 const SQUARE_SIZE = '80px';
 
 const ChallengeCreate: React.FC = () => {
+  const { id } = useParams<{ id: string }>();  
+  const navigate = useNavigate();  
   const [fen, setFen] = useState<string>('8/8/8/8/8/8/8/8'); 
+  const [name, setName] = useState<string>(''); 
+  const [error, setError] = useState<string>(''); 
+
+ 
+  useEffect(() => {
+    if (id) {
+      fetch(`http://127.0.0.1:5000/get_challenge/${id}`)  
+        .then(response => response.json())
+        .then(data => {
+          if (data.challenge) {
+            setFen(data.challenge.fen);  
+            setName(data.challenge.name);  
+          }
+        })
+        .catch(err => console.error('Error fetching challenge data:', err));
+    }
+  }, [id]);  
 
   const updateFen = (pieces: { [key: string]: string }) => {
     const rows: string[] = Array(8).fill('');
@@ -32,6 +52,8 @@ const ChallengeCreate: React.FC = () => {
       }
     }
     setFen(rows.join('/'));
+
+    sendBoardStateToBackend(rows.join('/'));
   };
 
   const handleMove = (from: string, to: string, type: string) => {
@@ -60,6 +82,19 @@ const ChallengeCreate: React.FC = () => {
     });
     return pieces;
   };
+
+  const sendBoardStateToBackend = async (fen: string) => {
+    try {
+      await fetch('http://127.0.0.1:5000/update_board', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fen }),
+      });
+    } catch (error) {
+      console.error('Error sending board state to backend:', error);
+    }
+  };
+
 
   const renderSquares = () => {
     const pieces = fenToPieces(fen);
@@ -91,7 +126,6 @@ const ChallengeCreate: React.FC = () => {
     return squares;
   };
 
-
   const renderPieces = (isWhite: boolean, theme: string) => {
     const pieceTypes = isWhite
       ? ['P', 'N', 'B', 'R', 'Q', 'K'] 
@@ -109,50 +143,67 @@ const ChallengeCreate: React.FC = () => {
   };
 
   const saveChallenge = async () => {
-    try {
-        const response = await fetch('http://127.0.0.1:5000/save_challenge', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ fen }),
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-            console.log(`Challenge saved successfully with ID: ${data.challenge_id}`);
-        } else {
-            console.error(`Failed to save challenge: ${data.error}`);
-        }
-    } catch (error) {
-        console.error('Error saving challenge:', error);
+    if (!name.trim()) {
+      setError('Please enter a challenge name before saving.');
+      return;
     }
-};
 
+    const method = id ? 'PUT' : 'POST';  // Use PUT for update, POST for new challenge
+    const url = id ? `http://127.0.0.1:5000/update_challenge/${id}` : 'http://127.0.0.1:5000/save_challenge';
 
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fen, name }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log(`Challenge saved/updated successfully with ID: ${data.challenge_id}`);
+        navigate('/challenge'); 
+      } else {
+        console.error(`Failed to save challenge: ${data.error}`);
+        setError(`Failed to save challenge: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving challenge:', error);
+      setError('An error occurred while saving the challenge.');
+    }
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
-        <div className="challenge-create">
-            <div className="pieces-wrapper">
-                <div className="piece-column">{renderPieces(false, 'regular')}</div>
-                <div className="piece-column">{renderPieces(true, 'regular')}</div>
-            </div>
-
-            <div
-                className="board-wrapper"
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
-                }}
-            >
-                {renderSquares()}
-            </div>
-
-            <button onClick={saveChallenge} className="save-challenge-button">
-                Save Challenge
-            </button>
+      <div className="challenge-create">
+        <div>
+          <label>
+            Challenge Name:
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="challenge-name-input"
+            />
+          </label>
         </div>
+        {error && <div className="error-message">{error}</div>}
+        <div className="pieces-wrapper">
+          <div className="piece-column">{renderPieces(false, 'regular')}</div>
+          <div className="piece-column">{renderPieces(true, 'regular')}</div>
+        </div>
+        <div
+          className="board-wrapper"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
+          }}
+        >
+          {renderSquares()}
+        </div>
+        <button onClick={saveChallenge} className="save-challenge-button">
+          {id ? 'Update Challenge' : 'Save Challenge'}
+        </button>
+      </div>
     </DndProvider>
   );
 };
