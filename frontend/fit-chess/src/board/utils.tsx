@@ -1,3 +1,7 @@
+// File: utils.tsx
+// Authors: xracek12
+// Desc: Utility functions for the chess board
+
 import { SQUARE_SIZE } from './board';
 
 // calculates the position of the square relative to the board

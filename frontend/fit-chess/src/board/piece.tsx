@@ -1,3 +1,9 @@
+// File: piece.tsx
+// Authors: xracek12, xjakub41
+// Desc: Definitions of chess pieces, pawn promotion menu and captured pieces component
+// xracek12: Main logic for the Piece, PromotionOptions and CapturedPiecesComponent components
+// xjakub41: visual theme support
+
 import { useDrag } from 'react-dnd';
 import { calculatePosition } from './utils';
 import './Board.css';
@@ -8,7 +14,7 @@ interface PieceProps {
     position: string;  // the 'from' position for the drag
     handlePick: (position: string) => void;
     onClick?: () => void;
-    theme: string; // The theme used for the piece images
+    theme: string; // theme used for the piece images
 }
 
 const pieceSrc: { [key: string]: string } = {
@@ -39,7 +45,7 @@ export const Piece: React.FC<PieceProps> = ({ type, position, handlePick, onClic
                 cursor: 'default',
                 transform: 'translate(0, 0)',  // hides the background when dragging
             }}
-            onClick={onClick}  // Volitelné `onClick` pro jednoduché kliknutí
+            onClick={onClick}
         >
             <img src={pieceUrl} alt={type} height={SQUARE_SIZE} width={SQUARE_SIZE} />
         </div>
@@ -66,7 +72,6 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
 
     const apiUrl = `http://127.0.0.1:5000/themes/${theme}/`;
 
-    // tyto divy se musi nacpat do componentu nebo alespon css classy ale jsem liny :sob:
     return (
         <div style={{ display: 'flex', flexDirection: 'column', position: 'absolute', left: X, top: Y }}>
             <button className="promotion-button" onClick={() => onSelect('q')}><img src={apiUrl + pieceSrc[queen]} alt={'pQ'} height={SQUARE_SIZE} width={SQUARE_SIZE} /></button>
@@ -95,8 +100,8 @@ document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
 
 export const CapturedPiecesComponent: React.FC<{ pieces?: Pieces, material: number, player: string, theme: string }> = ({ pieces, material, player, theme }) => {
     const pieceOrder = player === 'white' 
-        ? { Q: 'q', R: 'r', B: 'b', N: 'n', P: 'p' } // Opponent's pieces for white player
-        : { Q: 'Q', R: 'R', B: 'B', N: 'N', P: 'P' }; // Opponent's pieces for black player
+        ? { Q: 'q', R: 'r', B: 'b', N: 'n', P: 'p' } // opponents pieces for white player
+        : { Q: 'Q', R: 'R', B: 'B', N: 'N', P: 'P' }; // opponents pieces for black player
 
     const apiUrl = `http://127.0.0.1:5000/themes/${theme}/`;
 
@@ -118,8 +123,8 @@ export const CapturedPiecesComponent: React.FC<{ pieces?: Pieces, material: numb
                         style={{
                             margin: '2px',
                             position: 'relative',
-                            marginLeft: `${(index * -25) - 5}px`, // Slight overlap
-                            zIndex: 10-index // Ensures the latest piece is on top
+                            marginLeft: `${(index * -25) - 5}px`, // make them overlap
+                            zIndex: 10-index // leftmost piece is on top
                         }}
                     />
                 ))

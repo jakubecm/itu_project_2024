@@ -1,3 +1,7 @@
+// File: GameOverModal.tsx
+// Author: xracek12
+// Desc: Component for game over modal with garlic-fall effect
+
 import React, { useEffect, useState } from 'react';
 import Snowfall from 'react-snowfall';
 import garlic1 from '../assets/garlic1.svg';

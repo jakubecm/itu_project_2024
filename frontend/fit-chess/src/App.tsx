@@ -1,3 +1,7 @@
+// File: App.tsx
+// Authors: xracek12, xjakub41, xbabia01, xtesar44
+// Desc: Main application component with routing
+
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './Menu/MainMenu';
 import NewGameMenu from './Menu/NewGameMenu';

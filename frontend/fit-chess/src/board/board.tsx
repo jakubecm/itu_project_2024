@@ -1,3 +1,10 @@
+// File: board.tsx
+// Authors: xracek12, xjakub41, xtesar44
+// Desc: Chess board, handles all state manipulation and rendering
+// xracek12: Main logic for the board component, state manipulation and rendering of the board, drag and drop functionality
+// xjakub41: Extension for keyboard navigation and on-click controlls, hints and move history
+// xtesar44: Extension for challenge mode support
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { Square } from './square';
 import { CapturedPieces, CapturedPiecesComponent, Piece, PromotionOptions } from './piece';
@@ -94,6 +101,8 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         initializeGame();
     }, [initialFen]);
 
+    // Author: xracek12
+    // return moves made by AI
     const callAIMove = async () => {
         try {
           const response = await fetch('http://127.0.0.1:5000/ai_move', {
@@ -118,6 +127,7 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         }
       };
 
+    // Author: xracek12
     // function that launches when a move is made
     // handles promotion moves and submits the move
     const handleMove = useCallback(async (fromSquare: string, toSquare: string, piece: string) => {
@@ -210,6 +220,8 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [selectedSquare, selectedPiece, showPromotionOptions, navigateBoard, selectSquare]);
 
+    // Author: xracek12
+    // handle display of pawn promotion options
     const handlePromotionSelect = async (piece: string) => {
         if (promotionMove) {
             await submitMove(promotionMove.fromSquare, promotionMove.toSquare + piece);
@@ -218,6 +230,7 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         }
     };
 
+    // Author: xracek12
     // function that launches when a move is submitted
     // calls the backend to make the move
     // fetches the new game state
@@ -263,8 +276,10 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         }
     };
 
+    // Author: xracek12
     // function that simulates a move
     // calls the backend to return the would-be game state without actually making the move
+    // used during pawn promotion menu, to display the board with pawn in the back row
     const simulateMove = async (move: string) => {
         try {
             const response = await fetch('http://127.0.0.1:5000/simulate_move', {
@@ -333,6 +348,7 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
     };
     
 
+    // Author: xracek12
     // function that launches when a piece is picked up
     // shows legal moves for the selected piece
     const handlePieceSelection = async (position: string) => {
@@ -389,19 +405,23 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         }
       }, [moveMode, selectedSquare, handleMove]);
       
-      const fetchLegalMoves = async (selectedSquare: string) => {
-        const response = await fetch('http://127.0.0.1:5000/legal_moves', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ position: selectedSquare }),
-        });
 
-        const data = await response.json();
-        setLegalMoves(data.legal_moves);
-        return data.legal_moves;
-      };
+    // Author: xracek12
+    // fetch legal moves for the selected piece and square
+    const fetchLegalMoves = async (selectedSquare: string) => {
+    const response = await fetch('http://127.0.0.1:5000/legal_moves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: selectedSquare }),
+    });
+
+    const data = await response.json();
+    setLegalMoves(data.legal_moves);
+    return data.legal_moves;
+    };
 
 
+    // Author: xracek12
     // start a new game by calling the backend
     const startNewGame = async () => {
         try {
@@ -425,6 +445,8 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         }
     };
 
+    // Author: xracek12
+    // get the captured pieces from the backend
     const getCapturedPieces = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/captured_pieces');
@@ -438,6 +460,8 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
 
  
 
+    // Author: xracek12
+    // show game over screen when the game is over
     useEffect(() => {
         if (gameState && (gameState.is_checkmate || gameState.is_stalemate)) {
             gameState.turn = gameState.turn === 'white' ? 'Black' : 'White';
@@ -456,6 +480,8 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
         return <div>Loading...</div>;
     }
 
+    // Author: xracek12
+    // render the squares of the board, while handing down information about highlighted squares
     const renderSquares = () => {
         const pos = gameState.fen.split(' ')[0];
         const squares: JSX.Element[] = [];
@@ -468,7 +494,7 @@ export const Board: React.FC<BoardProps> = ({initialFen}) => {
 
         pos.split('').forEach((c) => {
             if (c === '/') {
-                // Move to the next row
+                // move to the next row
                 row = String.fromCharCode(row.charCodeAt(0) - 1);
                 col = 'a';
                 return;
