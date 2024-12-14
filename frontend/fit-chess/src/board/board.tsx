@@ -30,7 +30,11 @@ interface Players {
 
 type Difficulty = 'beginner' | 'intermediate' | 'none';
 
-export const Board: React.FC<unknown> = () => {
+interface BoardProps {
+    initialFen?: string; // Initial FEN for challenge mode
+}
+
+export const Board: React.FC<BoardProps> = ({initialFen}) => {
     const [loading, setLoading] = useState<boolean>(true);  // Loading state to indicate API call is in progress
     const [gameState, setGameState] = useState<GameState>(); // Track the game state
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null); // Track the selected piece
@@ -53,6 +57,42 @@ export const Board: React.FC<unknown> = () => {
     const { difficulty } = useParams<Record<string, string>>();
 
     const difficultyLevel = (difficulty as Difficulty) || 'none';
+
+    useEffect(() => {
+        const initializeGame = async () => {
+            if (initialFen) {
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/set_fen', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fen: initialFen }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('Failed to initialize FEN:', errorData.error);
+                        return;
+                    }
+
+                    const data = await response.json();
+                    setGameState(data);
+                    setMoveHistory([]);
+                    setPlayers({
+                        white: "Player 1",
+                        black: "Player 2",
+                    });
+                } catch (e) {
+                    console.error('Error initializing FEN:', e);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                await startNewGame(); 
+            }
+        };
+
+        initializeGame();
+    }, [initialFen]);
 
     const callAIMove = async () => {
         try {
@@ -396,10 +436,7 @@ export const Board: React.FC<unknown> = () => {
         }
     };
 
-    // UseEffect hook to start a new game when the component mounts
-    useEffect(() => {
-        startNewGame();
-    }, []); // Empty dependency array ensures this runs only once on mount
+ 
 
     useEffect(() => {
         if (gameState && (gameState.is_checkmate || gameState.is_stalemate)) {
@@ -476,7 +513,7 @@ export const Board: React.FC<unknown> = () => {
                 <div>
                     <div style={{display: 'flex'}}>
                         <span className='board-text' style={{marginRight: '10px', fontSize: '29px'}}>{players.black}</span>
-                        <CapturedPiecesComponent pieces={capturedPieces?.black} material={gameState.material_balance} theme={theme} player='black' />
+                        {(!initialFen)?<CapturedPiecesComponent pieces={capturedPieces?.black} material={gameState.material_balance} theme={theme} player='black' />:null}
                     </div>
                     <DndProvider backend={HTML5Backend}>
                         <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(8, ' + SQUARE_SIZE + ')' }}>
@@ -493,7 +530,7 @@ export const Board: React.FC<unknown> = () => {
                     </DndProvider>
                     <div style={{display: 'flex'}}>
                         <span className='board-text' style={{marginRight: '10px', fontSize: '29px'}}>{players.white}</span>
-                        <CapturedPiecesComponent pieces={capturedPieces?.white} material={gameState.material_balance} theme={theme} player='white' />
+                        {(!initialFen)?<CapturedPiecesComponent pieces={capturedPieces?.white} material={gameState.material_balance} theme={theme} player='white' />:null}
                     </div>
                 </div>
                 <Sidebar moveHistory={moveHistory} onRevert={revertLastMove} onHint={showHint} />
