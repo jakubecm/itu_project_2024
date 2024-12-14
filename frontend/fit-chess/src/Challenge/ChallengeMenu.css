@@ -1,131 +1,65 @@
-.challenge-menu-container {
+.challenge-item-wrapper {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin: 20px;
+    justify-content: center;
+    margin-bottom: 15px;
+    
 }
 
-.challenge-menu-container .back-button {
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    font-size: 16px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.challenge-menu-container .back-button:hover {
-    background-color: #0056b3;
-}
-
-.challenge-menu-container .title {
-    text-align: center;
+.challenge-item {
     width: 100%;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-.challenge-menu-container .menu-container {
+    max-width: 600px;
+    padding: 20px;
+    background-color: #c9c2c2;
+    border-radius: 10px;  
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+    border: 5px solid black;
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    width: 100%;
-}
-
-.challenge-menu-container .menu-left {
-    flex: 1;
-    display: flex;
-    justify-content: flex-start;
     align-items: center;
 }
 
-.challenge-menu-container .create-challenge-button {
-    padding: 10px 15px;
-    font-size: 16px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.challenge-menu-container .create-challenge-button:hover {
-    background-color: #218838;
-}
-
-.challenge-menu-container .menu-center {
+.challenge-info {
     flex: 2;
     text-align: center;
 }
 
-.challenge-menu-container .challenge-list {
+.challenge-name {
+    font-size: 30px;
+    font-family: 'Lexend Tera', sans-serif;
+    font-weight: bold;
+    color:black;
+}
+
+.challenge-menu h2 {
+    color: black; 
+    font-size: 36px;  
+    font-weight: bold;  
+    margin-bottom: 5px;  
+}
+
+
+.challenge-menu {
+    background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%);
+    padding: 50px;
+    min-height: 100vh;
+    align-items: center;
+}
+
+.menu-center {
+    flex: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+
+.challenge-list {
     list-style-type: none;
     padding: 0;
     margin-top: 20px;
-}
-
-.challenge-menu-container .challenge-item {
+    width: 100%;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 10px;
-    margin: 10px auto;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
-    max-width: 500px;
-}
-
-.challenge-menu-container .challenge-info {
-    flex: 2;
-    text-align: left;
-}
-
-.challenge-menu-container .challenge-name {
-    font-size: 18px;
-}
-
-.challenge-menu-container .challenge-buttons {
-    flex: 1;
-    display: flex;
-    justify-content: space-around;
-}
-
-.challenge-menu-container .play-button,
-.challenge-menu-container .edit-button,
-.challenge-menu-container .delete-button {
-    padding: 5px 10px;
-    font-size: 14px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.challenge-menu-container .play-button {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.challenge-menu-container .play-button:hover {
-    background-color: #138496;
-}
-
-.challenge-menu-container .edit-button {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.challenge-menu-container .edit-button:hover {
-    background-color: #e0a800;
-}
-
-.challenge-menu-container .delete-button {
-    background-color: #dc3545;
-    color: white;
-}
-
-.challenge-menu-container .delete-button:hover {
-    background-color: #c82333;
 }

@@ -81,49 +81,55 @@ const ChallengeMenu: React.FC = () => {
 
     return (
         <div className="challenge-menu">
-            <button className="back-button" onClick={() => navigate('/')}>⬅️ Back</button>
-
-            <h1 className="title">Challenge Menu</h1>
-
+          <button className="back-button" onClick={() => navigate('/')}>⬅️ Back</button>       
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <div className="menu-container">
+              <div className="menu-center">
                 <div className="menu-left">
                     <Link to="/challenge/create">
                         <button className="create-challenge-button">Create Challenge</button>
                     </Link>
                 </div>
-
-                <div className="menu-center">
-                    <h2>Your Challenges</h2>
-                    <ul className="challenge-list">
-                        {challenges.map((challenge) => (
-                            <li key={challenge.id} className="challenge-item">
-                                <div className="challenge-info">
-                                    <span className="challenge-name">{challenge.name}</span>
-                                </div>
-                                <div className="challenge-buttons">
-                                    <button
-                                        className="play-button"
-                                        onClick={() => setSelectedChallenge(challenge.id)}
-                                    >
-                                        Play
-                                    </button>
-                                    <button 
-                                      className="edit-button"
-                                      onClick={() => navigate(`/challenge/edit/${challenge.id}`)}>Edit</button>
-                                    <button
-                                        className="delete-button"
-                                        onClick={() => deleteChallenge(challenge.id)}
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <h2>Your Challenges:</h2>
+                <ul className="challenge-list">
+                  {challenges.map((challenge) => (
+                    <li key={challenge.id} className="challenge-item-wrapper">
+                      <div className="challenge-item">
+                        <div style={{display: 'flex', flexDirection: 'column'}}>
+                        <div className="challenge-info">
+                          <span className="challenge-name">{challenge.name}</span>
+                        </div>
+                        <div className="challenge-buttons">
+                          <button
+                            className="play-button"
+                            onClick={() => setSelectedChallenge(challenge.id)}
+                          >
+                            Play
+                          </button>
+                          <button 
+                            className="edit-button"
+                            onClick={() => navigate(`/challenge/edit/${challenge.id}`)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-button"
+                            onClick={() => deleteChallenge(challenge.id)}
+                          >
+                            Delete
+                          </button>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
+          </div>
         </div>
-    );
+      );
+      
 };
 
 export default ChallengeMenu;
