@@ -180,42 +180,49 @@ const ChallengeCreate: React.FC = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="challenge-create">
-        <div>
-          <label>
-            Challenge Name:
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="challenge-name-input"
-            />
-          </label>
-        </div>
-        {error && <div className="error-message">{error}</div>}
-        <div className="pieces-wrapper">
-          <div className="piece-column">{renderPieces(false, 'regular')}</div>
-          <div className="piece-column">{renderPieces(true, 'regular')}</div>
-        </div>
-        <div
-          className="board-wrapper"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
-          }}
-        >
-          {renderSquares()}
-        </div>
-        <button onClick={saveChallenge} className="save-challenge-button">
-          {id ? 'Update Challenge' : 'Save Challenge'}
-        </button>
-        <button onClick={resetBoard} className="reset-board-button">
-          Reset Board
-        </button>
+      <div style={{ justifyContent: 'center',     alignItems: 'center'}}>
+        <div className="challenge-create">
+          {error && <div className="error-message">{error}</div>}
+  
+          <div className="pieces-wrapper">
+            <div className="piece-column">{renderPieces(false, 'regular')}</div>
+            <div className="piece-column">{renderPieces(true, 'regular')}</div>
+          </div>
+  
+          <div
+            className="board-wrapper"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(8, ${SQUARE_SIZE})`,
+            }}
+          >
+            {renderSquares()}
+          </div>
 
+          <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+            <div className="challenge-info-wrapper">
+              <label>
+              Challenge Name:
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="challenge-name-input"
+              />
+              </label>
+              <button onClick={saveChallenge} className="save-challenge-button">
+                {id ? 'Update Challenge' : 'Save Challenge'}
+              </button>
+              <button onClick={resetBoard} className="reset-board-button">
+                Reset Board
+              </button>
+            </div>  
+          </div>
+        </div>
       </div>
     </DndProvider>
   );
+  
 };
 
 export default ChallengeCreate;
