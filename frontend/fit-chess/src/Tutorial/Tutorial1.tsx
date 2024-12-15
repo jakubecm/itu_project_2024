@@ -3,6 +3,7 @@ import { Square } from '../board/square';
 import { Piece } from '../board/piece';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useNavigate } from 'react-router-dom';
 import './TutorialBoard.css';
 
 
@@ -24,6 +25,7 @@ export const TutorialBoard: React.FC<{}> = () => {
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
     const [legalMoves, setLegalMoves] = useState<string[]>([]);
+    const navigate = useNavigate();
 
     // start a new game by calling the backend
     const startNewGame = async () => {
@@ -158,6 +160,7 @@ export const TutorialBoard: React.FC<{}> = () => {
             <div style={{ justifyContent: 'center',alignItems: 'center', flexDirection: 'column' }}>
                 <div className='tutorial1'>
                     <div className="board-container">
+                    <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
                         <div className="piece-row">
                             <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R6R w KQkq - 0 1')} theme={'regular'} />
                             <Piece type="N" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/1N4N1 w KQkq - 0 1')} theme={'regular'} />
