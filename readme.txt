@@ -2,11 +2,11 @@ Adresářová struktura je naprosto jednoduchá - ve složce backend je backendo
 
 Všechny relevantní soubory FE jsou ve složce fit-chess, podsložce src.
 
-Základní hra šachů a věci kolem se nachází ve složce board - primárními autory jsou Jakub Ráček a Milan Jakubec, konkrétní informace lze dohledat v hlavičkách jednotlivých souborů, autorství se mnohdy překrývá.
+Základní hra šachů a věci kolem se nachází ve složce board - primárními autory jsou Jakub Ráček a Milan Jakubec, konkrétní informace lze dohledat v hlavičkách jednotlivých souborů, autorství se mnohdy překrývá. MultiplayerBoard je práce Normana Babiaka.
 Implementace šachových výzev se nachází ve složce Challenge, jejíž výhradným autorem je Jiří Tesař.
 Implementace Dámy se nachází ve složce Checkers, jejíž výhradným autorem je Norman Babiak.
 Ve složce Menu se nachází veškeré komponenty potřebné pro navigaci hrou a možnost tvorby vlastní obtížnosti - autorsky se podílejí všichni, konkrétní informace jsou v hlavičkách souborů.
-Ve složce Multiplayer se nachází úprava implementace šachů pro podporu multiplayeru, práce Normana Babiaka, nicméně využívá prvky naprogramované Milanem Jakubcem a Jakubem Ráčkem.
+Ve složce Multiplayer se nachází úprava implementace šachů pro podporu multiplayeru, práce Normana Babiaka, zahrnuje primárně server list a věci okolo.
 Implementace základní verze výukového režimu se nachází ve složce Tutorial, jejíž autorem je Jiří Tesař.
 
 V případě pochybností o autorství jednotlivých souborů je možno udělit vyučujícím přístup do git repozitáře s historií.
