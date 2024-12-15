@@ -10,6 +10,12 @@
 .tutorial1 {
     font-family: 'Lexend Tera', sans-serif;
     font-size: 14px;
+    justify-content: center; 
+    align-items: center; 
+    display: flex;
+    background: linear-gradient(100deg, #E3D3D3 18%, #553737 100%); 
+    min-height: 100%;
+    min-width: 100%;
 }
 
 
@@ -17,6 +23,7 @@
 .tutorial1 .board-container {
     display: center;
     flex-direction: row; 
+    margin-left: 100px;
 }
 
 .tutorial1 .description-container {
@@ -24,13 +31,10 @@
     width: 206px;
     height: 620px;
     border-radius: 5px;
-    display: flex;
-    flex-direction: column; 
-    align-items: flex-start; 
-    justify-content: flex-start;
+    
+    margin-right: 150px;
     resize: both;
     text-align: justify;
-    margin-left: 15px;
     color: black;
     padding: 10px;
 }

@@ -155,8 +155,8 @@ export const TutorialBoard: React.FC<{}> = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className='tutorial1'>
-                <div className="board-wrapper">
+            <div style={{ justifyContent: 'center',alignItems: 'center', flexDirection: 'column' }}>
+                <div className='tutorial1'>
                     <div className="board-container">
                         <div className="piece-row">
                             <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R6R w KQkq - 0 1')} theme={'regular'} />
@@ -170,7 +170,7 @@ export const TutorialBoard: React.FC<{}> = () => {
                             {renderSquares()}
                         </div>                        
                         <div className="description-container">
-                            <p>On the left side, choose the figure you want to learn to move and try out their movements.</p>
+                            <p>On the left side, click on the figure you want to learn to move and try out their movements.</p>
                         </div>
                     </div>
                 </div>
