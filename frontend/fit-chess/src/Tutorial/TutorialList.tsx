@@ -1,3 +1,7 @@
+// File: TutorialList.tsx
+// Author: xtesar44
+// Description: Component for tutorial list
+
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';  
 import './tutorialList.css'; 

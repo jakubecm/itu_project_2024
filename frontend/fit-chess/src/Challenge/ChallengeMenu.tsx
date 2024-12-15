@@ -1,9 +1,12 @@
+// File: ChallengeMenu.tsx
+//  Author: xtesar44
+// Description: Component for challenge menu, load and manage challenges
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Board } from '../board/board';
 import './ChallengeMenu.css';
 import { useNavigate } from 'react-router-dom';
-
 
 
 interface Challenge {
@@ -17,12 +20,13 @@ interface ChallengeData {
 }
 
 const ChallengeMenu: React.FC = () => {
-    const [challenges, setChallenges] = useState<Challenge[]>([]);
-    const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null);
+    const [challenges, setChallenges] = useState<Challenge[]>([]); // Track the challenges
+    const [selectedChallenge, setSelectedChallenge] = useState<string | null>(null); // Track the selected challenge
     const [loading, setLoading] = useState<boolean>(true);
 
     const navigate = useNavigate();
 
+    // Fetch challenges from the backend
     const fetchChallenges = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/get_challenges');
@@ -69,6 +73,7 @@ const ChallengeMenu: React.FC = () => {
         return <div>Loading challenges...</div>;
     }
 
+    //Play the selected challenge
     if (selectedChallenge) {
         const selectedFen = challenges.find((challenge) => challenge.id === selectedChallenge)?.fen || '';
         return (

@@ -1,3 +1,8 @@
+// File: Tutorial1.tsx
+// Author: most function are taken from the old version board.tsx by xracek12, 
+//         modified by xtesar44
+// Description: Component for tutorial 1 - basic moves
+
 import React, { useEffect, useState } from 'react';
 import { Square } from '../board/square';
 import { Piece } from '../board/piece';
@@ -18,16 +23,13 @@ interface GameState {
     is_check: boolean;
 }
 
-
-
 export const TutorialBoard: React.FC<{}> = () => {
-    const [loading, setLoading] = useState<boolean>(true);
-    const [gameState, setGameState] = useState<GameState | null>(null);
-    const [selectedPiece, setSelectedPiece] = useState<string | null>(null);
-    const [legalMoves, setLegalMoves] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(true); 
+    const [gameState, setGameState] = useState<GameState | null>(null); // Track the game state
+    const [legalMoves, setLegalMoves] = useState<string[]>([]); // Track legal moves for the selected piece
     const navigate = useNavigate();
 
-    // start a new game by calling the backend
+    // start a new game by calling the backend for a new tutorial
     const startNewGame = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/new_tutorial', {
@@ -55,9 +57,8 @@ export const TutorialBoard: React.FC<{}> = () => {
         return <div>Loading...</div>;
     }
 
-
+    // Function to fetch legal moves for the selected piece
     const handlePieceSelection = async (position: string) => {
-        setSelectedPiece(position);
 
         try {
             const response = await fetch('http://127.0.0.1:5000/legal_moves', {
@@ -72,6 +73,7 @@ export const TutorialBoard: React.FC<{}> = () => {
         }
     };
 
+    // Function to handle a move from one square to another
     const handleMove = async (fromSquare: string, toSquare: string) => {
         try {
             const response = await fetch('http://127.0.0.1:5000/move_white', {
@@ -82,7 +84,6 @@ export const TutorialBoard: React.FC<{}> = () => {
             if (response.ok) {
                 const data = await response.json();
                 setGameState(data);
-                setSelectedPiece(null);
                 setLegalMoves([]);
             }
         } catch (error) {
@@ -90,6 +91,7 @@ export const TutorialBoard: React.FC<{}> = () => {
         }
     };
 
+    // Function to set a new FEN string for the game state
     const setFenString = async (newFen: string) => {
         try {
             const response = await fetch('http://127.0.0.1:5000/set_fen', {
@@ -102,14 +104,14 @@ export const TutorialBoard: React.FC<{}> = () => {
             if (data.error) {
                 console.error("Invalid FEN format");
             } else {
-                setGameState(data);  // Aktualizace stavu hry s novým FEN
+                setGameState(data);  
             }
         } catch (error) {
             console.error("Failed to set FEN:", error);
         }
     };
 
-
+    // Function to render the squares of the board
     const renderSquares = () => {
         const rows = gameState.fen.split(' ')[0].split('/');
         const squares: JSX.Element[] = [];
@@ -160,7 +162,7 @@ export const TutorialBoard: React.FC<{}> = () => {
             <div style={{ justifyContent: 'center',alignItems: 'center', flexDirection: 'column' }}>
                 <div className='tutorial1'>
                     <div className="board-container">
-                    <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
+                        <button className="back-button" onClick={() => navigate(-1)}>⬅️ Back</button>
                         <div className="piece-row">
                             <Piece type="R" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/R6R w KQkq - 0 1')} theme={'regular'} />
                             <Piece type="N" position="none" handlePick={() => {}} onClick={() => setFenString('8/8/8/8/8/8/8/1N4N1 w KQkq - 0 1')} theme={'regular'} />

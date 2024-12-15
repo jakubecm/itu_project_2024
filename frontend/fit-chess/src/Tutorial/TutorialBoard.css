@@ -1,11 +1,14 @@
+/* 
+    File: TutorialBoard.css
+    Author: xtesar44
+*/
+
 .board-container {
     display: flex;
     justify-content: center; 
     align-items: center; 
     height: 100vh; 
 }
-
-
 
 .tutorial1 {
     font-family: 'Lexend Tera', sans-serif;
@@ -17,8 +20,6 @@
     min-height: 100%;
     min-width: 100%;
 }
-
-
 
 .tutorial1 .board-container {
     display: center;

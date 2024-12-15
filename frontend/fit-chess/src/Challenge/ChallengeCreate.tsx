@@ -1,3 +1,7 @@
+// File: ChallengeCreate.tsx
+// Author: xtesar44
+// Description: Component for creating and edit a new challenge
+
 import React, { useState, useEffect } from 'react';  
 import './ChallengeCreate.css';
 import { Piece } from '../board/piece';
@@ -6,16 +10,17 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Square } from '../board/square';
 import { useParams, useNavigate } from 'react-router-dom';  
 
+
 const SQUARE_SIZE = '80px';
 
 const ChallengeCreate: React.FC = () => {
-  const { id } = useParams<{ id: string }>();  
+  const { id } = useParams<{ id: string }>();  // Get the challenge ID from the URL
   const navigate = useNavigate();  
-  const [fen, setFen] = useState<string>('8/8/8/8/8/8/8/8'); 
-  const [name, setName] = useState<string>(''); 
-  const [error, setError] = useState<string>(''); 
+  const [fen, setFen] = useState<string>('8/8/8/8/8/8/8/8'); // Initial board state
+  const [name, setName] = useState<string>(''); // Challenge name
+  const [error, setError] = useState<string>(''); // Error message
 
- 
+  // Fetch challenge data if edit some challenge
   useEffect(() => {
     if (id) {
       fetch(`http://127.0.0.1:5000/get_challenge/${id}`)  
@@ -30,6 +35,7 @@ const ChallengeCreate: React.FC = () => {
     }
   }, [id]);  
 
+  // Update the FEN string when a piece is moved
   const updateFen = (pieces: { [key: string]: string }) => {
     const rows: string[] = Array(8).fill('');
     for (let row = 8; row >= 1; row--) {
@@ -53,9 +59,11 @@ const ChallengeCreate: React.FC = () => {
     }
     setFen(rows.join('/'));
 
+    // Send the updated board state to the backend
     sendBoardStateToBackend(rows.join('/'));
   };
 
+  // Handle moving pieces on the board
   const handleMove = (from: string, to: string, type: string) => {
     const newPieces = { ...fenToPieces(fen) };
     if (from !== 'source') {
@@ -65,6 +73,7 @@ const ChallengeCreate: React.FC = () => {
     updateFen(newPieces);
   };
 
+  // Convert FEN string to pieces
   const fenToPieces = (fen: string) => {
     const pieces: { [key: string]: string } = {};
     const rows = fen.split('/');
@@ -83,6 +92,7 @@ const ChallengeCreate: React.FC = () => {
     return pieces;
   };
 
+  // Send the board state to the backend
   const sendBoardStateToBackend = async (fen: string) => {
     try {
       await fetch('http://127.0.0.1:5000/update_board', {
@@ -95,13 +105,14 @@ const ChallengeCreate: React.FC = () => {
     }
   };
 
+  // Reset the board to the initial state
   const resetBoard = async () => {
     const initialFen = '8/8/8/8/8/8/8/8'; 
     setFen(initialFen);  
     await sendBoardStateToBackend(initialFen);  
   };
   
-
+  // Render the squares of the board
   const renderSquares = () => {
     const pieces = fenToPieces(fen);
     const squares: JSX.Element[] = [];
@@ -132,10 +143,11 @@ const ChallengeCreate: React.FC = () => {
     return squares;
   };
 
+  // Render the pieces for the piece
   const renderPieces = (isWhite: boolean, theme: string) => {
     const pieceTypes = isWhite
-      ? ['P', 'N', 'B', 'R', 'Q', 'K'] 
-      : ['p', 'n', 'b', 'r', 'q', 'k']; 
+      ? ['P', 'N', 'B', 'R', 'Q', 'K']  // White pieces
+      : ['p', 'n', 'b', 'r', 'q', 'k']; // Black pieces
 
     return pieceTypes.map((type, index) => (
       <Piece
@@ -148,6 +160,7 @@ const ChallengeCreate: React.FC = () => {
     ));
   };
 
+  // Save or update the challenge
   const saveChallenge = async () => {
     if (!name.trim()) {
       setError('Please enter a challenge name.');
@@ -178,12 +191,12 @@ const ChallengeCreate: React.FC = () => {
     }
   };
 
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div style={{ justifyContent: 'center',     alignItems: 'center'}}>
         <div className="challenge-create">
           
-  
           <div className="pieces-wrapper">
             <div className="piece-column">{renderPieces(false, 'regular')}</div>
             <div className="piece-column">{renderPieces(true, 'regular')}</div>
@@ -222,7 +235,6 @@ const ChallengeCreate: React.FC = () => {
       </div>
     </DndProvider>
   );
-  
 };
 
 export default ChallengeCreate;
