@@ -150,7 +150,7 @@ const ChallengeCreate: React.FC = () => {
 
   const saveChallenge = async () => {
     if (!name.trim()) {
-      setError('Please enter a challenge name before saving.');
+      setError('Please enter a challenge name.');
       return;
     }
 
@@ -182,7 +182,7 @@ const ChallengeCreate: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div style={{ justifyContent: 'center',     alignItems: 'center'}}>
         <div className="challenge-create">
-          {error && <div className="error-message">{error}</div>}
+          
   
           <div className="pieces-wrapper">
             <div className="piece-column">{renderPieces(false, 'regular')}</div>
@@ -215,7 +215,7 @@ const ChallengeCreate: React.FC = () => {
               </button>
               <button onClick={resetBoard} className="reset-board-button">
                 Reset Board
-              </button>
+              </button>{error && <div className="error-message">{error}</div>}
             </div>  
           </div>
         </div>
