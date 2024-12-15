@@ -1,3 +1,7 @@
+// File: Piece.tsx
+// Author: Norman Babiak (xbabia01)
+// Desc: Pieces component for the checkers
+
 import React from 'react';
 import { useDrag } from 'react-dnd';
 import '../board/Board.css';
