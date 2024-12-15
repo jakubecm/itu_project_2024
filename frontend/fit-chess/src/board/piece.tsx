@@ -7,6 +7,7 @@
 import { useDrag } from 'react-dnd';
 import { calculatePosition } from './utils';
 import './Board.css';
+import { SQUARE_SIZE } from './board';
 
 
 interface PieceProps {
@@ -71,6 +72,7 @@ export const PromotionOptions: React.FC<PromotionOptionsProps> = ({ onSelect, tu
         (position.y - 4 * squareSizeNum) + 'px';  // position the promotion options above the pawn
 
     const apiUrl = `http://127.0.0.1:5000/themes/${theme}/`;
+    document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', position: 'absolute', left: X, top: Y }}>
@@ -94,9 +96,6 @@ interface Pieces {
     b: number;
     q: number;
 }
-
-const SQUARE_SIZE = '80px';
-document.documentElement.style.setProperty('--square-size', SQUARE_SIZE);
 
 export const CapturedPiecesComponent: React.FC<{ pieces?: Pieces, material: number, player: string, theme: string }> = ({ pieces, material, player, theme }) => {
     const pieceOrder = player === 'white' 
